@@ -1,0 +1,77 @@
+---
+- name: Validate the new Lightsail host
+  hosts: web_servers
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Assert that the server matches the selected Lightsail plan
+      ansible.builtin.assert:
+        that:
+          - 'ansible_facts["distribution"] == "Ubuntu"'
+          - >-
+            ansible_facts["distribution_version"]
+            is version("24.04", ">=")
+          - 'ansible_facts["architecture"] == "x86_64"'
+          - 'ansible_facts["processor_vcpus"] | int >= 2'
+          - 'ansible_facts["memtotal_mb"] | int >= 3500'
+        fail_msg: >-
+          The target server does not match the expected Ubuntu 24.04,
+          x86_64, 2-vCPU, 4-GB Lightsail configuration.
+        success_msg: >-
+          The target server matches the expected Lightsail configuration.
+
+    - name: Inspect root filesystem capacity
+      ansible.builtin.command:
+        cmd: df -h /
+      register: root_filesystem
+      changed_when: false
+
+    - name: Inspect memory and swap
+      ansible.builtin.command:
+        cmd: free -h
+      register: memory_status
+      changed_when: false
+
+    - name: Inspect current timezone configuration
+      ansible.builtin.command:
+        cmd: timedatectl status
+      register: timezone_status
+      changed_when: false
+
+    - name: Inspect listening network sockets
+      ansible.builtin.command:
+        cmd: ss --tcp --udp --listening --numeric --processes
+      register: listening_sockets
+      changed_when: false
+
+    - name: Gather system service facts
+      ansible.builtin.service_facts:
+
+    - name: Identify failed services
+      ansible.builtin.set_fact:
+        failed_service_names: >-
+          {{
+            ansible_facts["services"]
+            | dict2items
+            | selectattr("value.state", "equalto", "failed")
+            | map(attribute="key")
+            | list
+          }}
+
+    - name: Display the preflight summary
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Hostname: {{ ansible_facts['hostname'] }}"
+          - >-
+            OS: {{ ansible_facts["distribution"] }}
+            {{ ansible_facts["distribution_version"] }}
+          - "Architecture: {{ ansible_facts['architecture'] }}"
+          - "vCPUs: {{ ansible_facts['processor_vcpus'] }}"
+          - "Memory: {{ ansible_facts['memtotal_mb'] }} MB"
+          - "Root filesystem:\n{{ root_filesystem.stdout }}"
+          - "Memory and swap:\n{{ memory_status.stdout }}"
+          - "Timezone:\n{{ timezone_status.stdout }}"
+          - "Listening sockets:\n{{ listening_sockets.stdout }}"
+          - "Failed services: {{ failed_service_names }}"
