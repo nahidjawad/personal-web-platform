@@ -1,0 +1,36 @@
+---
+- name: Reboot the host when required
+  hosts: web_servers
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Check whether a reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required_file
+
+    - name: Reboot and wait for the host to return
+      ansible.builtin.reboot:
+        msg: Reboot initiated by Ansible after operating-system updates
+        connect_timeout: 10
+        reboot_timeout: 600
+        pre_reboot_delay: 5
+        post_reboot_delay: 10
+        test_command: whoami
+      when: reboot_required_file.stat.exists
+
+    - name: Verify host connectivity after the reboot
+      ansible.builtin.ping:
+
+    - name: Read system uptime
+      ansible.builtin.command:
+        cmd: uptime --pretty
+      register: reboot_uptime
+      changed_when: false
+
+    - name: Display post-reboot status
+      ansible.builtin.debug:
+        msg:
+          - "Reboot was required: {{ reboot_required_file.stat.exists }}"
+          - "Current uptime: {{ reboot_uptime.stdout }}"
