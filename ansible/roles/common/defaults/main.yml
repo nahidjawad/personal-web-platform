@@ -1,0 +1,13 @@
+---
+common_server_timezone: Etc/UTC
+
+common_packages:
+  - acl
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - jq
+  - rsync
+  - ufw
+  - unzip
