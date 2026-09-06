@@ -1,0 +1,46 @@
+# Python and uv local environment
+.venv/
+__pycache__/
+*.py[cod]
+
+# Ansible local and runtime files
+*.retry
+ansible/inventories/production/hosts.yml
+ansible/inventories/production/host_vars/*/secrets.yml
+ansible/vault-password*
+collections/
+
+# Application secrets
+.env
+.env.*
+!.env.example
+
+# TLS certificates and private keys
+certificates/
+*.pem
+*.key
+*.crt
+
+# Migration and database artifacts
+migration-data/
+backups/
+*.sql
+*.sql.gz
+*.dump
+*.tar
+*.tar.gz
+*.zip
+
+# WordPress persistent content
+wp-content/
+uploads/
+
+# Logs and temporary files
+*.log
+tmp/
+.cache/
+
+# Editor and operating-system files
+.vscode/
+.DS_Store
+Thumbs.db

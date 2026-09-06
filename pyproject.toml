@@ -1,0 +1,11 @@
+[project]
+name = "personal-web-platform"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ansible-core>=2.21,<2.22",
+    "ansible-lint>=26.8.0",
+]

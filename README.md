@@ -1,0 +1,41 @@
+# Personal Web Platform
+
+A reproducible, container-based platform for hosting personal web applications on AWS Lightsail.
+
+The platform initially hosts `chintavabna.com`. It is designed to support additional applications later without coupling the infrastructure repository to one website.
+
+## Planned architecture
+
+- AWS Lightsail
+- Ubuntu 24.04 LTS
+- Ansible
+- Docker Engine and Docker Compose
+- Nginx
+- WordPress with PHP-FPM
+- MariaDB
+- Cloudflare DNS, proxy and origin TLS
+- AWS SES for WordPress email
+- Off-server backups
+
+## Repository purpose
+
+This repository contains:
+
+- Ansible configuration and playbooks
+- Docker Compose configuration
+- Nginx configuration
+- Backup and monitoring scripts
+- Deployment and disaster-recovery documentation
+
+It does not contain:
+
+- Production secrets
+- SSH private keys
+- TLS private keys
+- WordPress uploads
+- Database contents
+- Backup archives
+
+## Current status
+
+See [docs/project-status.md](docs/project-status.md).
