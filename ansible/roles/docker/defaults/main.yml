@@ -1,0 +1,31 @@
+---
+docker_architecture_map:
+  x86_64: amd64
+  aarch64: arm64
+
+docker_apt_architecture: >-
+  {{ docker_architecture_map[ansible_facts["architecture"]] }}
+
+docker_conflicting_packages:
+  - containerd
+  - docker-buildx
+  - docker-compose
+  - docker-compose-v2
+  - docker-doc
+  - docker.io
+  - podman-docker
+  - runc
+
+docker_packages:
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-ce
+  - docker-ce-cli
+  - docker-compose-plugin
+
+docker_daemon_config:
+  live-restore: true
+  log-driver: json-file
+  log-opts:
+    max-file: "3"
+    max-size: "10m"

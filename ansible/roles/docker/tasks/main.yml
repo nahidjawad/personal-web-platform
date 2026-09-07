@@ -1,0 +1,114 @@
+---
+- name: Validate the Docker host platform
+  ansible.builtin.assert:
+    that:
+      - ansible_facts["distribution"] == "Ubuntu"
+      - ansible_facts["architecture"] in docker_architecture_map
+    fail_msg: >-
+      This Docker role supports Ubuntu on x86_64 or aarch64 hosts.
+
+- name: Remove packages that conflict with Docker CE
+  ansible.builtin.apt:
+    name: "{{ docker_conflicting_packages }}"
+    state: absent
+
+- name: Install Docker repository prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - python3-debian
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create the APT keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install the Docker repository signing key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure the official Docker APT repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types:
+      - deb
+    uris:
+      - https://download.docker.com/linux/ubuntu
+    suites:
+      - "{{ ansible_facts['distribution_release'] }}"
+    components:
+      - stable
+    architectures:
+      - "{{ docker_apt_architecture }}"
+    signed_by: /etc/apt/keyrings/docker.asc
+    state: present
+    enabled: true
+  register: docker_repository
+
+- name: Install Docker Engine and Compose
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present
+    update_cache: "{{ docker_repository.changed }}"
+  notify: Restart Docker daemon
+
+- name: Create the Docker configuration directory
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure the Docker daemon
+  ansible.builtin.copy:
+    content: "{{ docker_daemon_config | to_nice_json }}\n"
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Docker daemon
+
+- name: Enable and start the Docker service
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Apply pending Docker configuration changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Read the installed Docker version
+  ansible.builtin.command:
+    cmd: docker --version
+  register: docker_version
+  changed_when: false
+
+- name: Read the installed Docker Compose version
+  ansible.builtin.command:
+    cmd: docker compose version
+  register: docker_compose_version
+  changed_when: false
+
+- name: Read the installed Docker Buildx version
+  ansible.builtin.command:
+    cmd: docker buildx version
+  register: docker_buildx_version
+  changed_when: false
+
+- name: Display the installed Docker components
+  ansible.builtin.debug:
+    msg:
+      - "{{ docker_version.stdout }}"
+      - "{{ docker_compose_version.stdout }}"
+      - "{{ docker_buildx_version.stdout }}"

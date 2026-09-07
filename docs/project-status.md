@@ -2,8 +2,8 @@
 
 ## Current phase
 
-Phase 3 complete: the Ansible-managed Ubuntu host baseline is configured
-and verified.
+Phase 4 complete: Docker Engine, Docker Compose and Docker Buildx are installed,
+configured and verified through Ansible.
 
 ## Completed
 
@@ -57,30 +57,42 @@ and verified.
 - Production data and secrets remain outside Git
 - Production DNS remains pointed at the old server until testing passes
 
+### Docker platform
+
+- Added Docker's official Ubuntu package repository
+- Installed Docker Engine from the official repository
+- Installed the Docker Compose plugin
+- Installed the Docker Buildx plugin
+- Enabled Docker to start at boot
+- Configured bounded `json-file` container logging
+- Enabled Docker live restore
+- Kept administrative Docker access behind privilege escalation
+- Verified the runtime using the disposable `hello-world` container
+- Confirmed the Docker role is idempotent
+- Documented host deployment and initial Docker operations
+
 ## Next phase
 
-Phase 4: install and verify Docker Engine and the Docker Compose plugin
-using Ansible.
+Phase 5: design and implement the initial Docker Compose application platform.
 
 Planned work:
 
-- Add Docker’s official Ubuntu package repository
-- Install Docker Engine
-- Install the Docker Compose and Buildx plugins
-- Configure Docker logging defaults
-- Enable Docker at boot
-- Decide how administrative Docker access will be handled
-- Verify Docker with a disposable test container
-- Verify the Docker role is idempotent
-- Document the Docker installation and operating model
+- Learn the Compose service, network and volume model
+- Decide the repository and server directory layout
+- Define explicit container image versions
+- Create the internal Docker networks
+- Create persistent storage for WordPress and MariaDB
+- Create the initial environment-variable template
+- Ensure MariaDB is not published to the host
+- Validate the Compose configuration before starting the application
 
 ## Safety state
 
 - Production DNS still points to the old server
 - The old server has not been modified
 - The new server does not receive production traffic
-- Docker and the application stack are not installed yet
-- MariaDB is not exposed
+- Docker is installed, but the application stack is not deployed
+- No application containers or databases are currently running- MariaDB is not exposed
 - UFW is active with default-deny inbound policy
 - HTTP and HTTPS are temporarily public for migration testing
 - Cloudflare-only origin restrictions have not been enabled

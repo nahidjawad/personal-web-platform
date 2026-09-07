@@ -44,7 +44,9 @@ See [docs/project-status.md](docs/project-status.md).
 
 - [Architecture](docs/architecture.md)
 - [Engineering decisions](docs/decisions.md)
+- [Deployment guide](docs/deployment.md)
+- [Operations guide](docs/operations.md)
 - [Current project status](docs/project-status.md)
 
-Additional deployment, migration, operations and recovery documentation
-will be added as the platform is implemented and verified.
+Migration, security and disaster-recovery documentation will be expanded as
+the corresponding procedures are implemented and verified.
