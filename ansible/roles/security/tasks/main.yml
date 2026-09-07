@@ -1,0 +1,45 @@
+---
+- name: Permit rate-limited SSH before enabling UFW
+  community.general.ufw:
+    rule: limit
+    port: "{{ security_ssh_port }}"
+    proto: tcp
+    comment: Rate-limited SSH administration
+
+- name: Permit initial web traffic
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    comment: Initial web traffic
+  loop: "{{ security_web_ports }}"
+  loop_control:
+    label: "TCP {{ item }}"
+
+- name: Deny inbound traffic by default
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: Allow outbound traffic by default
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: Enable low-volume firewall logging
+  community.general.ufw:
+    logging: low
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled
+
+- name: Read the active UFW configuration
+  ansible.builtin.command:
+    cmd: ufw status verbose
+  register: security_ufw_status
+  changed_when: false
+
+- name: Display the active UFW configuration
+  ansible.builtin.debug:
+    var: security_ufw_status.stdout_lines

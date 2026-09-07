@@ -1,0 +1,8 @@
+---
+- name: Configure the host firewall
+  hosts: web_servers
+  gather_facts: false
+  become: true
+
+  roles:
+    - role: security

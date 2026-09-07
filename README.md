@@ -39,3 +39,13 @@ It does not contain:
 ## Current status
 
 See [docs/project-status.md](docs/project-status.md).
+
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Engineering decisions](docs/decisions.md)
+- [Current project status](docs/project-status.md)
+
+Additional deployment, migration, operations and recovery documentation
+will be added as the platform is implemented and verified.

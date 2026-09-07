@@ -1,0 +1,6 @@
+---
+security_ssh_port: "22"
+
+security_web_ports:
+  - "80"
+  - "443"
