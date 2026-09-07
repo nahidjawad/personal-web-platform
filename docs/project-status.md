@@ -44,18 +44,7 @@ configured and verified through Ansible.
 - Allowed temporary HTTPS access on TCP 443
 - Enabled low-volume UFW logging
 - Verified SSH access remained available after enabling UFW
-- Confirmed the security role is idempotent
-
-## Current architecture decisions
-
-- Ubuntu 24.04 LTS is the managed server operating system
-- Ansible manages host configuration
-- Docker Compose will manage application containers
-- Nginx, WordPress PHP-FPM and MariaDB will run as separate containers
-- Cloudflare remains authoritative DNS and the public proxy
-- The server and infrastructure logs use UTC
-- Production data and secrets remain outside Git
-- Production DNS remains pointed at the old server until testing passes
+- Confirmed the security role is 
 
 ### Docker platform
 
@@ -70,6 +59,17 @@ configured and verified through Ansible.
 - Verified the runtime using the disposable `hello-world` container
 - Confirmed the Docker role is idempotent
 - Documented host deployment and initial Docker operations
+
+## Current architecture decisions
+
+- Ubuntu 24.04 LTS is the managed server operating system
+- Ansible manages host configuration
+- Docker Compose will manage application containers
+- Nginx, WordPress PHP-FPM and MariaDB will run as separate containers
+- Cloudflare remains authoritative DNS and the public proxy
+- The server and infrastructure logs use UTC
+- Production data and secrets remain outside Git
+- Production DNS remains pointed at the old server until testing passes
 
 ## Next phase
 
@@ -92,7 +92,8 @@ Planned work:
 - The old server has not been modified
 - The new server does not receive production traffic
 - Docker is installed, but the application stack is not deployed
-- No application containers or databases are currently running- MariaDB is not exposed
+- No application containers or databases are currently running
+- MariaDB is not exposed
 - UFW is active with default-deny inbound policy
 - HTTP and HTTPS are temporarily public for migration testing
 - Cloudflare-only origin restrictions have not been enabled
