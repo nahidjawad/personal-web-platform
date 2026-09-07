@@ -40,7 +40,6 @@ It does not contain:
 
 See [docs/project-status.md](docs/project-status.md).
 
-
 ## Documentation
 
 - [Architecture](docs/architecture.md)
