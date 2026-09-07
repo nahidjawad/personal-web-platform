@@ -1,0 +1,8 @@
+---
+- name: Configure host swap
+  hosts: web_servers
+  gather_facts: false
+  become: true
+
+  roles:
+    - role: swap
