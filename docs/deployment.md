@@ -120,6 +120,17 @@ Install and configure Docker:
 ```bash
 uv run ansible-playbook playbooks/docker.yml
 ```
+
+## Prepare the Compose platform directories
+
+Create the application deployment directories:
+
+```bash
+uv run ansible-playbook playbooks/compose-platform.yml
+```
+This creates the deployment root, Nginx configuration directories and the
+root-restricted secrets directory.
+
 ## Verify idempotency
 
 Run each configuration playbook a second time after its initial successful

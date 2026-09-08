@@ -1,0 +1,11 @@
+---
+- name: Create the application platform directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop: "{{ compose_platform_directories }}"
+  loop_control:
+    label: "{{ item.path }}"

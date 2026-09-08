@@ -1,0 +1,12 @@
+---
+compose_platform_root: /srv/personal-web-platform
+
+compose_platform_directories:
+  - path: "{{ compose_platform_root }}"
+    mode: "0755"
+  - path: "{{ compose_platform_root }}/nginx"
+    mode: "0755"
+  - path: "{{ compose_platform_root }}/nginx/conf.d"
+    mode: "0755"
+  - path: "{{ compose_platform_root }}/secrets"
+    mode: "0700"

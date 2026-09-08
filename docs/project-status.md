@@ -60,6 +60,14 @@ approved. No application containers or databases are running yet.
 - Confirmed the Docker role is idempotent
 - Documented host deployment and initial Docker operations
 
+### Compose platform foundation
+
+- Created the application deployment directories through Ansible
+- Set `/srv/personal-web-platform` as the deployment root
+- Created the Nginx configuration directories
+- Restricted the secrets directory to root
+- Confirmed the Compose platform role is idempotent
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system

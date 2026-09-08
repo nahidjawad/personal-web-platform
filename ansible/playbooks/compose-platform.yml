@@ -1,0 +1,8 @@
+---
+- name: Prepare the Docker Compose application platform
+  hosts: web_servers
+  gather_facts: false
+  become: true
+
+  roles:
+    - role: compose_platform
