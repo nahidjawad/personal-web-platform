@@ -103,7 +103,7 @@ uv run ansible-playbook playbooks/baseline.yml
 ```
 If the baseline reports that a reboot is required, run:
 ```bash
-uv run ansible-playbook playbooks/reboot.yml
+uv run ansible-playbook playbooks/reboot-if-required.yml
 ```
 Configure persistent swap:
 ```bash

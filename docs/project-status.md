@@ -2,8 +2,8 @@
 
 ## Current phase
 
-Phase 4 complete: Docker Engine, Docker Compose and Docker Buildx are installed,
-configured and verified through Ansible.
+Phase 5 in progress: the Docker Compose application architecture has been
+approved. No application containers or databases are running yet.
 
 ## Completed
 
@@ -44,7 +44,7 @@ configured and verified through Ansible.
 - Allowed temporary HTTPS access on TCP 443
 - Enabled low-volume UFW logging
 - Verified SSH access remained available after enabling UFW
-- Confirmed the security role is 
+- Confirmed the security role is idempotent
 
 ### Docker platform
 
@@ -65,7 +65,7 @@ configured and verified through Ansible.
 - Ubuntu 24.04 LTS is the managed server operating system
 - Ansible manages host configuration
 - Docker Compose will manage application containers
-- Nginx, WordPress PHP-FPM and MariaDB will run as separate containers
+- Nginx, WordPress Apache and MariaDB will run as separate containers
 - Cloudflare remains authoritative DNS and the public proxy
 - The server and infrastructure logs use UTC
 - Production data and secrets remain outside Git
@@ -80,11 +80,18 @@ Planned work:
 - Learn the Compose service, network and volume model
 - Decide the repository and server directory layout
 - Define explicit container image versions
+- Separate frontend and backend container networks
 - Create the internal Docker networks
 - Create persistent storage for WordPress and MariaDB
 - Create the initial environment-variable template
 - Ensure MariaDB is not published to the host
 - Validate the Compose configuration before starting the application
+
+## Cutover requirement
+
+Before the Phase 10 DNS cutover, create and copy off-server a fresh MariaDB
+dump and WordPress content backup. Full scheduled backup automation and
+restoration testing remain Phase 11 work.
 
 ## Safety state
 

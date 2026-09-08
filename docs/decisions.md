@@ -13,7 +13,7 @@ future rebuilds from repeating the same research without context.
 | Provisioning | Ansible over SSH | Makes host configuration repeatable and reviewable |
 | Controller | WSL 2 with isolated Python 3.12 | Keeps automation tooling separate from Windows and other projects |
 | Application runtime | Docker Compose | Provides understandable, reproducible container orchestration for a single VPS |
-| Web stack | Nginx and WordPress PHP-FPM | Provides explicit routing, FastCGI and origin TLS configuration |
+| Web stack | Nginx reverse proxy and WordPress Apache | Keeps origin TLS and multi-site routing separate while using the simpler official WordPress runtime |
 | Database | MariaDB container | Maintains WordPress compatibility while isolating the database from the host |
 | Server timezone | UTC | Keeps infrastructure, Cloudflare and application logs consistently comparable |
 | Swap | 2 GiB with swappiness 10 | Provides emergency memory protection without encouraging normal swap use |
@@ -21,6 +21,19 @@ future rebuilds from repeating the same research without context.
 | Public edge | Cloudflare | Retains existing authoritative DNS, proxy, CDN and public TLS |
 | Origin TLS | Cloudflare Origin CA | Authenticates and encrypts Cloudflare-to-origin traffic |
 | Secrets | Stored outside Git | Prevents credentials, private keys and production state entering repository history |
+
+## Why WordPress Apache is used instead of PHP-FPM
+
+Nginx remains the public-facing reverse proxy and will later terminate origin
+TLS and route multiple hostnames.
+
+The official WordPress Apache image handles WordPress, PHP and application HTTP
+requests within one container. This avoids sharing the WordPress filesystem
+with Nginx and maintaining separate FastCGI configuration.
+
+A separate PHP-FPM container would provide more control, but its additional
+filesystem, permissions and routing complexity is not justified for the
+initial low-traffic site.
 
 ## Why Ubuntu instead of Amazon Linux
 

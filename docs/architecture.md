@@ -17,7 +17,7 @@ flowchart TD
     cloudflare["Cloudflare<br/>DNS, CDN, proxy and public TLS"]
     lightsail["AWS Lightsail<br/>Ubuntu 24.04 LTS"]
     nginx["Nginx container<br/>Origin TLS and routing"]
-    wordpress["WordPress PHP-FPM container"]
+    wordpress["WordPress Apache container"]
     mariadb["MariaDB container"]
     wpdata[("WordPress data")]
     dbdata[("MariaDB data")]
@@ -59,8 +59,8 @@ flowchart LR
 | UFW | Host-level ingress policy and SSH rate limiting |
 | Ansible | Reproducible host configuration |
 | Docker Compose | Application-container lifecycle |
-| Nginx | Origin TLS, virtual hosts, static files and FastCGI routing |
-| WordPress/PHP-FPM | WordPress application execution |
+| Nginx | Reverse proxy, origin TLS and virtual-host routing |
+| WordPress/Apache | WordPress, PHP and application HTTP handling |
 | MariaDB | Persistent WordPress relational data |
 | Named volumes | Persistent application and database storage |
 | Backup system | Recovery copies stored independently of the VPS |
@@ -69,9 +69,10 @@ flowchart LR
 
 Production traffic still reaches the old server through Cloudflare.
 
-The new server is not yet a production origin. It currently contains only
-the secured Ubuntu host baseline. Docker and the application stack have
-not yet been installed.
+The new server is not yet a production origin. It currently contains the
+secured Ubuntu host baseline and the Ansible-managed Docker platform.
+Docker is installed and verified, but no application containers or databases
+are currently running.
 
 ## Network exposure
 
