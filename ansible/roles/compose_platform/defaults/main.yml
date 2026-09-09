@@ -1,5 +1,8 @@
 ---
 compose_platform_root: /srv/personal-web-platform
+compose_platform_db_name: chintavabna
+compose_platform_db_user: chintavabna
+compose_platform_source_root: "{{ playbook_dir }}/../../compose"
 
 compose_platform_directories:
   - path: "{{ compose_platform_root }}"

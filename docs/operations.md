@@ -86,19 +86,22 @@ Check listening ports:
 ```bash
 sudo ss --tcp --udp --listening --processes --numeric
 ```
-## Docker Compose operations
+## Docker Compose configuration
 
-Application-specific Compose commands will be added after the Compose stack is
-implemented and verified.
+Change to the application directory:
 
-That section will include:
-
-* Starting and stopping the stack
-* Checking container health
-* Viewing application logs
-* Pulling updated images
-* Applying deployments
-* Rolling back a failed deployment
-* Safely restarting individual services
-
-This intentionally avoids pretending that an application deployment already exists.
+```bash
+cd /srv/personal-web-platform
+```
+Validate the deployed configuration:
+```bash
+sudo docker compose --env-file .env config --quiet
+```
+List the defined services:
+```bash
+sudo docker compose --env-file .env config --services
+```
+List the defined persistent volumes:
+```bash
+sudo docker compose --env-file .env config --volumes
+```

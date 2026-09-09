@@ -66,7 +66,14 @@ approved. No application containers or databases are running yet.
 - Set `/srv/personal-web-platform` as the deployment root
 - Created the Nginx configuration directories
 - Restricted the secrets directory to root
-- Confirmed the Compose platform role is idempotent
+- Confirmed the Compose platform role is
+- Defined Nginx, WordPress Apache and MariaDB services
+- Separated frontend and private backend container networks
+- Defined persistent WordPress and MariaDB named volumes
+- Configured file-based secrets outside Git
+- Pinned explicit official container image versions
+- Deployed the Compose definition and non-secret environment through Ansible
+- Validated the Compose definition locally and on the server
 
 ## Current architecture decisions
 
@@ -81,19 +88,16 @@ approved. No application containers or databases are running yet.
 
 ## Next phase
 
-Phase 5: design and implement the initial Docker Compose application platform.
+Phase 6: configure and start Nginx, WordPress Apache and MariaDB.
 
 Planned work:
 
-- Learn the Compose service, network and volume model
-- Decide the repository and server directory layout
-- Define explicit container image versions
-- Separate frontend and backend container networks
-- Create the internal Docker networks
-- Create persistent storage for WordPress and MariaDB
-- Create the initial environment-variable template
-- Ensure MariaDB is not published to the host
-- Validate the Compose configuration before starting the application
+- Create the production database secret files
+- Add the initial Nginx configuration
+- Start MariaDB and verify its health
+- Start WordPress and Nginx
+- Verify network isolation and persistent storage
+- Verify container recreation and operational commands
 
 ## Cutover requirement
 
