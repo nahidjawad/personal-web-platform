@@ -131,6 +131,16 @@ uv run ansible-playbook playbooks/compose-platform.yml
 This creates the deployment root, Nginx configuration directories and the
 root-restricted secrets directory.
 
+The playbook also deploys `compose.yaml`, generates the non-secret `.env` file
+and validates the resulting Compose configuration.
+
+Validate it manually when required:
+
+```bash
+cd /srv/personal-web-platform
+sudo docker compose --env-file .env config --quiet
+```
+
 ## Verify idempotency
 
 Run each configuration playbook a second time after its initial successful

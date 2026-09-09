@@ -2,8 +2,8 @@
 
 ## Current phase
 
-Phase 5 in progress: the Docker Compose application architecture has been
-approved. No application containers or databases are running yet.
+Phase 5 complete: the Docker Compose application platform is defined,
+deployed and validated. Application containers have not been started.
 
 ## Completed
 
@@ -66,7 +66,7 @@ approved. No application containers or databases are running yet.
 - Set `/srv/personal-web-platform` as the deployment root
 - Created the Nginx configuration directories
 - Restricted the secrets directory to root
-- Confirmed the Compose platform role is
+- Confirmed the Compose platform role is idempotent
 - Defined Nginx, WordPress Apache and MariaDB services
 - Separated frontend and private backend container networks
 - Defined persistent WordPress and MariaDB named volumes
