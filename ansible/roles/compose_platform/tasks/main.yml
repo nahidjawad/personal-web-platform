@@ -25,6 +25,22 @@
     group: root
     mode: "0644"
 
+- name: Deploy the main Nginx configuration
+  ansible.builtin.copy:
+    src: "{{ compose_platform_source_root }}/nginx/nginx.conf"
+    dest: "{{ compose_platform_root }}/nginx/nginx.conf"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy the Chintavabna Nginx virtual host
+  ansible.builtin.copy:
+    src: "{{ compose_platform_source_root }}/nginx/conf.d/chintavabna.conf"
+    dest: "{{ compose_platform_root }}/nginx/conf.d/chintavabna.conf"
+    owner: root
+    group: root
+    mode: "0644"
+
 - name: Validate the deployed Compose definition
   ansible.builtin.command:
     cmd: docker compose --env-file .env config --quiet

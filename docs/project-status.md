@@ -2,8 +2,8 @@
 
 ## Current phase
 
-Phase 5 complete: the Docker Compose application platform is defined,
-deployed and validated. Application containers have not been started.
+Phase 6 complete: Nginx, WordPress Apache and MariaDB are running on the new
+server, and the initial application platform has passed verification.
 
 ## Completed
 
@@ -75,6 +75,17 @@ deployed and validated. Application containers have not been started.
 - Deployed the Compose definition and non-secret environment through Ansible
 - Validated the Compose definition locally and on the server
 
+### Initial application stack
+
+- Created protected WordPress and MariaDB secret files through Ansible
+- Configured Nginx as the public reverse proxy
+- Started Nginx, WordPress Apache and MariaDB with Docker Compose
+- Verified MariaDB health and WordPress database connectivity
+- Confirmed that only Nginx publishes an application port
+- Confirmed that MariaDB is not published to the host
+- Blocked requests for dotfiles at Nginx
+- Verified persistent WordPress content survives container recreation
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system
@@ -88,16 +99,8 @@ deployed and validated. Application containers have not been started.
 
 ## Next phase
 
-Phase 6: configure and start Nginx, WordPress Apache and MariaDB.
+Phase 7: configure Cloudflare origin TLS and perform pre-DNS testing.
 
-Planned work:
-
-- Create the production database secret files
-- Add the initial Nginx configuration
-- Start MariaDB and verify its health
-- Start WordPress and Nginx
-- Verify network isolation and persistent storage
-- Verify container recreation and operational commands
 
 ## Cutover requirement
 
@@ -110,9 +113,8 @@ restoration testing remain Phase 11 work.
 - Production DNS still points to the old server
 - The old server has not been modified
 - The new server does not receive production traffic
-- Docker is installed, but the application stack is not deployed
-- No application containers or databases are currently running
 - MariaDB is not exposed
 - UFW is active with default-deny inbound policy
 - HTTP and HTTPS are temporarily public for migration testing
 - Cloudflare-only origin restrictions have not been enabled
+- The application stack is running on the new server

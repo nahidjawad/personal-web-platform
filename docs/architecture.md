@@ -71,8 +71,9 @@ Production traffic still reaches the old server through Cloudflare.
 
 The new server is not yet a production origin. It currently contains the
 secured Ubuntu host baseline and the Ansible-managed Docker platform.
-Docker is installed and verified, but no application containers or databases
-are currently running.
+Nginx, WordPress Apache and MariaDB are running under Docker Compose. The
+database is healthy, application traffic reaches WordPress through Nginx, and
+persistent WordPress content survives container recreation.
 
 ## Network exposure
 

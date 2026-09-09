@@ -6,7 +6,6 @@ This guide contains tested operational procedures for the personal web
 platform. It will expand as the application stack, backups and monitoring are
 implemented.
 
-The current version covers the Docker host only.
 
 ## Check Docker service state
 
@@ -104,4 +103,40 @@ sudo docker compose --env-file .env config --services
 List the defined persistent volumes:
 ```bash
 sudo docker compose --env-file .env config --volumes
+```
+## Operate the application stack
+
+Run Compose commands from the deployment directory:
+
+```bash
+cd /srv/personal-web-platform
+```
+
+Check service state:
+
+```bash
+sudo docker compose --env-file .env ps
+```
+
+Follow logs:
+```bash
+sudo docker compose --env-file .env logs --follow
+```
+Start or reconcile the stack:
+```bash
+sudo docker compose --env-file .env up --detach --wait
+```
+Stop containers while retaining named volumes:
+```bash
+sudo docker compose --env-file .env down
+```
+Recreate WordPress while retaining persistent content:
+```bash
+sudo docker compose --env-file .env up \
+  --detach --no-deps --force-recreate --wait wordpress
+```
+Validate Nginx and the health endpoint:
+```bash
+sudo docker compose exec proxy nginx -t
+curl --fail http://127.0.0.1/platform-health
 ```

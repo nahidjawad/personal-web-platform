@@ -5,8 +5,6 @@
 This guide explains how to prepare a compatible Ubuntu server using the
 Ansible automation in this repository.
 
-Application deployment instructions will be added when the Docker Compose
-application stack is implemented and verified.
 
 ## Prerequisites
 
@@ -140,6 +138,29 @@ Validate it manually when required:
 cd /srv/personal-web-platform
 sudo docker compose --env-file .env config --quiet
 ```
+## Create application secrets
+
+Run the interactive secrets playbook from the Ansible directory:
+
+```bash
+uv run ansible-playbook playbooks/application-secrets.yml
+```
+The playbook prompts without displaying the passwords and creates protected
+files under `/srv/personal-web-platform/secrets`. Re-running it preserves
+existing secret values.
+
+## Start the application stack
+
+Connect to the server and run:
+```bash
+cd /srv/personal-web-platform
+sudo docker compose --env-file .env pull
+sudo docker compose --env-file .env up --detach --wait
+sudo docker compose --env-file .env ps
+curl --fail http://127.0.0.1/platform-health
+```
+MariaDB should report `healthy`, all three services should be running, and the
+health endpoint should return ``ok`.
 
 ## Verify idempotency
 
@@ -192,6 +213,4 @@ escalation through become: true.
 
 ## Current limitation
 
-This procedure currently prepares the server only. The Compose application
-deployment, secrets, TLS, WordPress, MariaDB and migration procedures will be
-added in later phases.
+Origin TLS and WordPress migration procedures will be added in later phases.

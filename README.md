@@ -11,7 +11,7 @@ The platform initially hosts `chintavabna.com`. It is designed to support additi
 - Ansible
 - Docker Engine and Docker Compose
 - Nginx
-- WordPress with PHP-FPM
+- WordPress with Apache
 - MariaDB
 - Cloudflare DNS, proxy and origin TLS
 - AWS SES for WordPress email
@@ -47,6 +47,7 @@ See [docs/project-status.md](docs/project-status.md).
 - [Deployment guide](docs/deployment.md)
 - [Operations guide](docs/operations.md)
 - [Current project status](docs/project-status.md)
+- [Security controls](docs/security.md)
 
 Migration, security and disaster-recovery documentation will be expanded as
 the corresponding procedures are implemented and verified.
