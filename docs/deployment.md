@@ -160,7 +160,73 @@ sudo docker compose --env-file .env ps
 curl --fail http://127.0.0.1/platform-health
 ```
 MariaDB should report `healthy`, all three services should be running, and the
-health endpoint should return ``ok`.
+health endpoint should return `ok`.
+
+## Deploy Cloudflare Origin CA TLS
+
+Create an Origin CA certificate in Cloudflare covering:
+
+```text
+chintavabna.com
+*.chintavabna.com
+```
+
+Store the certificate and private key outside the repository.
+
+Deploy them from the Ansible controller:
+
+```bash
+cd ansible
+uv run ansible-playbook playbooks/origin-tls.yml
+```
+
+Provide the absolute local certificate and private-key paths when prompted.
+
+Deploy the updated Compose and Nginx configuration:
+
+```bash
+uv run ansible-playbook playbooks/compose-platform.yml
+```
+
+Validate Nginx in a disposable container before recreating the proxy:
+
+```bash
+uv run ansible web_servers \
+  --become \
+  --module-name ansible.builtin.shell \
+  --args "cd /srv/personal-web-platform && docker compose --env-file .env run --rm --no-deps proxy nginx -t"
+```
+
+Recreate WordPress with forwarded HTTPS awareness:
+
+```bash
+uv run ansible web_servers \
+  --become \
+  --module-name ansible.builtin.shell \
+  --args "cd /srv/personal-web-platform && docker compose --env-file .env up --detach --no-deps --force-recreate --wait wordpress"
+```
+
+Recreate the proxy with its TLS mounts and published HTTPS port:
+
+```bash
+uv run ansible web_servers \
+  --become \
+  --module-name ansible.builtin.shell \
+  --args "cd /srv/personal-web-platform && docker compose --env-file .env up --detach --no-deps --force-recreate --wait proxy"
+```
+
+Validate the running proxy:
+
+```bash
+uv run ansible web_servers \
+  --become \
+  --module-name ansible.builtin.shell \
+  --args "cd /srv/personal-web-platform && docker compose --env-file .env exec proxy nginx -t"
+```
+
+Cloudflare Origin CA certificates are intended for Cloudflare-to-origin
+connections. Direct browser testing may report an untrusted certificate even
+when the origin is configured correctly.
 
 ## Verify idempotency
 

@@ -13,3 +13,5 @@ compose_platform_directories:
     mode: "0755"
   - path: "{{ compose_platform_root }}/secrets"
     mode: "0700"
+  - path: "{{ compose_platform_root }}/secrets/tls"
+    mode: "0700"

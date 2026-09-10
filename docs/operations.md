@@ -140,3 +140,30 @@ Validate Nginx and the health endpoint:
 sudo docker compose exec proxy nginx -t
 curl --fail http://127.0.0.1/platform-health
 ```
+
+## Inspect origin TLS
+
+Validate the running Nginx configuration:
+
+```bash
+cd /srv/personal-web-platform
+sudo docker compose --env-file .env exec proxy nginx -t
+```
+
+Inspect the Origin CA certificate without displaying the private key:
+
+```bash
+sudo openssl x509 \
+  -in /srv/personal-web-platform/secrets/tls/chintavabna-origin.pem \
+  -noout \
+  -subject \
+  -issuer \
+  -dates \
+  -ext subjectAltName
+```
+
+Confirm that the certificate is valid and covers `chintavabna.com` and
+`*.chintavabna.com`.
+
+Cloudflare does not send expiration notifications for Origin CA certificates.
+The expiration date must therefore be tracked operationally.

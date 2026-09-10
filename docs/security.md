@@ -9,6 +9,11 @@
 - MariaDB is reachable only through the private Compose backend network
 - Production secrets and persistent data are excluded from Git
 - Nginx denies requests for dotfiles
+- Cloudflare-to-origin traffic is encrypted using a Cloudflare Origin CA
+  certificate
+- Nginx terminates origin TLS on TCP 443
+- The Origin CA private key is root-owned, mode 0600 and excluded from Git
+- TLS files are mounted read-only into the Nginx container
 
 ## Application secrets
 
@@ -32,5 +37,5 @@ does not rotate the corresponding MariaDB account password.
 
 ## Planned controls
 
-Origin TLS, Cloudflare-only origin access and off-server backups will be added
-and verified in their roadmap phases.
+Cloudflare-only origin access and off-server backups will be added and
+verified in their roadmap phases.

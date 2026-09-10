@@ -1,0 +1,64 @@
+---
+- name: Deploy Cloudflare Origin CA TLS material
+  hosts: web_servers
+  gather_facts: false
+  become: true
+
+  vars_prompt:
+    - name: origin_tls_certificate_source
+      prompt: Enter the absolute local path to the Origin CA certificate
+      private: false
+
+    - name: origin_tls_private_key_source
+      prompt: Enter the absolute local path to the Origin CA private key
+      private: false
+
+  pre_tasks:
+    - name: Inspect local TLS source files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ origin_tls_certificate_source }}"
+        - "{{ origin_tls_private_key_source }}"
+      delegate_to: localhost
+      become: false
+      register: origin_tls_local_files
+
+    - name: Verify local TLS source files
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.isreg
+        fail_msg: "TLS source file does not exist: {{ item.item }}"
+        quiet: true
+      loop: "{{ origin_tls_local_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+  tasks:
+    - name: Create the protected TLS directory
+      ansible.builtin.file:
+        path: /srv/personal-web-platform/secrets/tls
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Deploy the Origin CA certificate
+      ansible.builtin.copy:
+        src: "{{ origin_tls_certificate_source }}"
+        dest: /srv/personal-web-platform/secrets/tls/chintavabna-origin.pem
+        owner: root
+        group: root
+        mode: "0644"
+        validate: openssl x509 -in %s -noout
+
+    - name: Deploy the Origin CA private key
+      ansible.builtin.copy:
+        src: "{{ origin_tls_private_key_source }}"
+        dest: /srv/personal-web-platform/secrets/tls/chintavabna-origin-key.pem
+        owner: root
+        group: root
+        mode: "0600"
+        validate: openssl pkey -in %s -check -noout
+      no_log: true

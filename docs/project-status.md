@@ -2,8 +2,12 @@
 
 ## Current phase
 
-Phase 6 complete: Nginx, WordPress Apache and MariaDB are running on the new
-server, and the initial application platform has passed verification.
+Phase 7 complete: Cloudflare Origin CA TLS is configured on the new server and
+pre-DNS HTTPS testing has passed.
+
+## Overall completion
+
+58% complete: 7 of 12 phases have passed verification.
 
 ## Completed
 
@@ -86,6 +90,25 @@ server, and the initial application platform has passed verification.
 - Blocked requests for dotfiles at Nginx
 - Verified persistent WordPress content survives container recreation
 
+### Origin TLS
+
+- Created an RSA Cloudflare Origin CA certificate for `chintavabna.com` and
+  `*.chintavabna.com`
+- Kept the Origin CA certificate and private key outside Git
+- Deployed the certificate and private key through Ansible
+- Protected the remote TLS directory and private key with restrictive
+  permissions
+- Configured Nginx to terminate HTTPS on TCP 443
+- Redirected normal HTTP requests to HTTPS
+- Kept the HTTP platform health endpoint available for local checks
+- Configured WordPress to recognise HTTPS forwarded by Nginx
+- Validated the Nginx configuration in a disposable container before
+  recreating the running proxy
+- Verified the certificate chain, validity and hostname externally using the
+  Cloudflare Origin CA root
+- Verified both apex and wildcard hostnames before changing production DNS
+- Confirmed that public production traffic still reaches the old server
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system
@@ -99,7 +122,13 @@ server, and the initial application platform has passed verification.
 
 ## Next phase
 
-Phase 7: configure Cloudflare origin TLS and perform pre-DNS testing.
+Phase 8: inspect the legacy WordPress server and export its database and
+`wp-content`.
+
+Phase 8 must not modify or interrupt the live site. The legacy server will be
+inspected first so that its actual WordPress paths, database settings, service
+layout, storage usage and export requirements are known before backups are
+created.
 
 
 ## Cutover requirement
@@ -118,3 +147,5 @@ restoration testing remain Phase 11 work.
 - HTTP and HTTPS are temporarily public for migration testing
 - Cloudflare-only origin restrictions have not been enabled
 - The application stack is running on the new server
+- The new origin accepts HTTPS using a Cloudflare Origin CA certificate
+- External pre-DNS HTTPS testing has passed without changing production DNS

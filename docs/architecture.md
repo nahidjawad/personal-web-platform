@@ -75,6 +75,12 @@ Nginx, WordPress Apache and MariaDB are running under Docker Compose. The
 database is healthy, application traffic reaches WordPress through Nginx, and
 persistent WordPress content survives container recreation.
 
+Nginx now terminates HTTPS using a Cloudflare Origin CA certificate covering
+`chintavabna.com` and `*.chintavabna.com`. The certificate and private key are
+stored outside Git and mounted read-only into the Nginx container. External
+pre-DNS testing has verified the certificate chain, hostname coverage, HTTP
+redirect and HTTPS health endpoint.
+
 ## Network exposure
 
 The initial host permits:
