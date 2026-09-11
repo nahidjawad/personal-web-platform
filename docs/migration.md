@@ -188,6 +188,7 @@ Set the connection and destination values privately:
 OLD_ORIGIN_USER=remote_user
 OLD_ORIGIN_IP=server_address
 OLD_ORIGIN_KEY=/absolute/path/to/private-key.pem
+REMOTE_EXPORT_DIR=/remote/export/path
 LOCAL_EXPORT_DIR=/private/local/backup/path
 ```
 
@@ -200,7 +201,7 @@ rsync \
   --info=progress2 \
   --rsync-path="sudo rsync" \
   --rsh="ssh -i $OLD_ORIGIN_KEY" \
-  "${OLD_ORIGIN_USER}@${OLD_ORIGIN_IP}:${EXPORT_DIR}/" \
+  "${OLD_ORIGIN_USER}@${OLD_ORIGIN_IP}:${REMOTE_EXPORT_DIR}/" \
   "$LOCAL_EXPORT_DIR/"
 ```
 

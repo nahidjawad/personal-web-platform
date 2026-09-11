@@ -170,5 +170,3 @@ restoration testing remain Phase 11 work.
 - External pre-DNS HTTPS testing has passed without changing production DNS
 - A verified Phase 8 export is stored off the legacy server
 - No production data has been imported into the new platform yet
-- A verified Phase 8 export is stored off the legacy server
-- No production data has been imported into the new platform yet
