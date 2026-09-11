@@ -48,6 +48,7 @@ See [docs/project-status.md](docs/project-status.md).
 - [Operations guide](docs/operations.md)
 - [Current project status](docs/project-status.md)
 - [Security controls](docs/security.md)
+- [Chintavabna migration](docs/migration.md)
 
 Migration, security and disaster-recovery documentation will be expanded as
 the corresponding procedures are implemented and verified.

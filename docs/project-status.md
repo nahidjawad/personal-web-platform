@@ -2,12 +2,12 @@
 
 ## Current phase
 
-Phase 7 complete: Cloudflare Origin CA TLS is configured on the new server and
-pre-DNS HTTPS testing has passed.
+Phase 8 complete: the legacy WordPress platform was inspected and its database
+and `wp-content` were exported, validated and copied off-server.
 
 ## Overall completion
 
-58% complete: 7 of 12 phases have passed verification.
+67% complete: 8 of 12 phases have passed verification.
 
 ## Completed
 
@@ -109,6 +109,25 @@ pre-DNS HTTPS testing has passed.
 - Verified both apex and wildcard hostnames before changing production DNS
 - Confirmed that public production traffic still reaches the old server
 
+### Legacy inspection and initial export
+
+- Confirmed the legacy WordPress document root and external configuration
+  arrangement
+- Confirmed the site-level configuration loads a protected shared
+  configuration outside the document root
+- Recorded the legacy Nginx, PHP-FPM, WordPress and MariaDB layout
+- Confirmed all 39 WordPress database tables use InnoDB
+- Created a consistent online logical database dump without stopping
+  production
+- Created a complete archive of `wp-content`
+- Confirmed the active Magbook theme and custom book-recommendations plugin
+  are present in the archive
+- Preserved the custom `robots.txt` separately
+- Generated SHA-256 checksums for all migration artifacts
+- Copied the export off the legacy server
+- Verified all checksums and compressed archives after transfer
+- Confirmed production remained available throughout the export
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system
@@ -122,13 +141,12 @@ pre-DNS HTTPS testing has passed.
 
 ## Next phase
 
-Phase 8: inspect the legacy WordPress server and export its database and
-`wp-content`.
+Phase 9: transfer and import the verified WordPress database and content into
+the new container platform.
 
-Phase 8 must not modify or interrupt the live site. The legacy server will be
-inspected first so that its actual WordPress paths, database settings, service
-layout, storage usage and export requirements are known before backups are
-created.
+The migrated site must pass pre-DNS testing before cutover. Fresh database and
+`wp-content` backups must also be created and copied off-server before Phase 10
+changes production DNS.
 
 
 ## Cutover requirement
@@ -140,7 +158,8 @@ restoration testing remain Phase 11 work.
 ## Safety state
 
 - Production DNS still points to the old server
-- The old server has not been modified
+- The legacy application, configuration and database were not modified;
+  protected Phase 8 export files were created separately
 - The new server does not receive production traffic
 - MariaDB is not exposed
 - UFW is active with default-deny inbound policy
@@ -149,3 +168,7 @@ restoration testing remain Phase 11 work.
 - The application stack is running on the new server
 - The new origin accepts HTTPS using a Cloudflare Origin CA certificate
 - External pre-DNS HTTPS testing has passed without changing production DNS
+- A verified Phase 8 export is stored off the legacy server
+- No production data has been imported into the new platform yet
+- A verified Phase 8 export is stored off the legacy server
+- No production data has been imported into the new platform yet
