@@ -77,8 +77,12 @@ Origin CA certificate. Nginx terminates origin TLS and proxies application
 requests to WordPress Apache.
 
 The migrated WordPress database and content are now live. Public application,
-administration and email-delivery testing passed after cutover. The legacy
-server remains temporarily available only as a rollback origin.
+administration and email-delivery testing passed after cutover.
+
+The legacy server remains available as the temporary rollback origin and still
+contains two unrelated inactive or unfinished workloads. Those workloads must
+be archived, migrated or deliberately discarded before the legacy server is
+deleted.
 
 ## Network exposure
 

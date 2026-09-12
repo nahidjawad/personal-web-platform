@@ -187,10 +187,19 @@ storage, retention, failure notification and a verified restoration test.
 
 ## Old-server retirement decision
 
-The legacy server remains unchanged for a minimum 24-hour post-cutover
-rollback window. It may be deleted after that window if the new platform
-remains healthy and the verified Phase 8 and Phase 9 off-server backups remain
-available.
+The legacy server remains unchanged for a minimum 24-hour Chintavabna
+post-cutover rollback window.
+
+The server also contains two unrelated inactive or unfinished workloads.
+Before deleting the legacy server, those workloads must be inspected and
+either archived off-server, migrated or deliberately discarded.
+
+The legacy server may be deleted only after:
+
+- the Chintavabna monitoring window passes
+- the new platform remains healthy
+- the verified Phase 8 and Phase 9 backups remain available
+- the remaining legacy workloads have been preserved or deliberately discarded
 
 Stopping a Lightsail instance does not replace deletion as a long-term
 cost-control measure.
@@ -209,3 +218,5 @@ cost-control measure.
 - The Phase 9 pre-cutover recovery checkpoint remains stored off-server
 - The old server remains available temporarily for rollback
 - Scheduled backups and restoration testing remain Phase 11 work
+- Two unrelated legacy workloads still require preservation or an explicit
+  discard decision before the old server can be deleted

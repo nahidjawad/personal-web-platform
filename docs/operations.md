@@ -176,7 +176,7 @@ Confirm Cloudflare and the new origin health endpoint:
 curl --silent --show-error --head https://chintavabna.com/ |
 grep -Ei '^(HTTP/|server:|cf-ray:|location:)'
 
-curl --fail --silent https://chintavabna.com/platform-
+curl --fail --silent https://chintavabna.com/platform-health
 ```
 The response headers should identify Cloudflare, and the health endpoint should
 return `ok`.
