@@ -14,6 +14,8 @@
 - Nginx terminates origin TLS on TCP 443
 - The Origin CA private key is root-owned, mode 0600 and excluded from Git
 - TLS files are mounted read-only into the Nginx container
+- Cloudflare uses Full (strict) validation for origin HTTPS
+- Public WordPress email uses Amazon SES with verified SPF, DKIM and DMARC
 
 ## Application secrets
 
@@ -37,5 +39,8 @@ does not rotate the corresponding MariaDB account password.
 
 ## Planned controls
 
-Cloudflare-only origin access and off-server backups will be added and
-verified in their roadmap phases.
+Automated off-server backups, retention, notifications and restoration testing
+remain Phase 11 work.
+
+Cloudflare-only HTTP and HTTPS origin restrictions and the final security
+review remain Phase 12 work.

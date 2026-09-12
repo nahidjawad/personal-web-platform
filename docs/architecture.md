@@ -69,22 +69,20 @@ flowchart LR
 
 ## Current deployment state
 
-Production traffic still reaches the old server through Cloudflare.
+Production traffic reaches the new Lightsail server through Cloudflare.
 
-The new server contains the migrated production WordPress database and
-content. Nginx, WordPress Apache and MariaDB are running under Docker Compose.
-The migrated site has passed pre-DNS HTTPS testing, but the new server is not
-yet the public production origin.
+Cloudflare provides authoritative DNS, public TLS and reverse proxying.
+Cloudflare validates the new origin using Full (strict) mode and the installed
+Origin CA certificate. Nginx terminates origin TLS and proxies application
+requests to WordPress Apache.
 
-Nginx now terminates HTTPS using a Cloudflare Origin CA certificate covering
-`chintavabna.com` and `*.chintavabna.com`. The certificate and private key are
-stored outside Git and mounted read-only into the Nginx container. External
-pre-DNS testing has verified the certificate chain, hostname coverage, HTTP
-redirect and HTTPS health endpoint.
+The migrated WordPress database and content are now live. Public application,
+administration and email-delivery testing passed after cutover. The legacy
+server remains temporarily available only as a rollback origin.
 
 ## Network exposure
 
-The initial host permits:
+The production host currently permits:
 
 - TCP 22 for rate-limited SSH
 - TCP 80 for pre-cutover HTTP testing

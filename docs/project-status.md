@@ -2,13 +2,13 @@
 
 ## Current phase
 
-Phase 9 complete: the verified WordPress database and `wp-content` export were
-imported into the new container platform, tested through the new HTTPS origin,
-and backed up off-server.
+Phase 10 complete: Cloudflare production traffic was switched to the new
+container platform, public application and email delivery tests passed, and
+initial monitoring found no relevant errors.
 
 ## Overall completion
 
-75% complete: 9 of 12 phases have passed verification.
+83% complete: 10 of 12 phases have passed verification.
 
 ## Completed
 
@@ -148,49 +148,64 @@ and backed up off-server.
 - Created fresh MariaDB, `wp-content` and generated-file backups
 - Copied the fresh backups off-server and verified their SHA-256 checksums
 
+### Production cutover
+
+- Confirmed the old and new origin details were available for rollback
+- Changed Cloudflare SSL/TLS mode from Full to Full (strict)
+- Verified the legacy origin certificate before enabling strict validation
+- Changed only the proxied apex A record to the new Lightsail static IP
+- Preserved the proxied `www` CNAME and all email-related DNS records
+- Verified `/platform-health` changed from the old-origin 404 response to the
+  new-origin HTTP 200 response
+- Confirmed both apex and `www` hostnames work through Cloudflare
+- Confirmed `www` redirects to the canonical apex hostname
+- Verified public WordPress pages, administration, REST API and generated SEO
+  files
+- Confirmed new public requests appeared in the Nginx container logs
+- Sent and received a WordPress test email through Amazon SES
+- Confirmed SPF, DKIM and DMARC authentication passed
+- Checked container state, host resources and logs after cutover
+- Found no relevant application, database, permission, upstream or HTTP 5xx
+  errors
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system
 - Ansible manages host configuration
-- Docker Compose will manage application containers
-- Nginx, WordPress Apache and MariaDB will run as separate containers
-- Cloudflare remains authoritative DNS and the public proxy
-- The server and infrastructure logs use UTC
+- Docker Compose manages application containers
+- Nginx, WordPress Apache and MariaDB run as separate containers
+- Cloudflare is authoritative DNS, the public proxy and the public TLS endpoint
+- Cloudflare uses Full (strict) validation for the HTTPS origin connection
+- WordPress core versions are managed through the pinned container image
 - Production data and secrets remain outside Git
-- Production DNS remains pointed at the old server until testing passes
+- The server and infrastructure logs use UTC
 
 ## Next phase
 
-Phase 10: perform final testing, change Cloudflare DNS to the new origin,
-verify public HTTPS and SES email delivery, and monitor the new platform.
+Phase 11: implement automated MariaDB and `wp-content` backups, off-server
+storage, retention, failure notification and a verified restoration test.
 
-The old production server must remain available for rollback until the new
-origin has passed post-cutover verification.
+## Old-server retirement decision
 
+The legacy server remains unchanged for a minimum 24-hour post-cutover
+rollback window. It may be deleted after that window if the new platform
+remains healthy and the verified Phase 8 and Phase 9 off-server backups remain
+available.
 
-## Cutover requirement
-
-The required fresh MariaDB dump and WordPress-content backup have been created,
-copied off-server and checksum-verified. This recovery checkpoint must be
-retained throughout the Phase 10 cutover.
-
-Full scheduled backup automation and restoration testing remain Phase 11 work.
+Stopping a Lightsail instance does not replace deletion as a long-term
+cost-control measure.
 
 ## Safety state
 
-- Production DNS still points to the old server
-- The legacy application, configuration and database were not modified;
-  protected Phase 8 export files were created separately
-- The new server does not receive production traffic
-- MariaDB is not exposed
-- UFW is active with default-deny inbound policy
-- HTTP and HTTPS are temporarily public for migration testing
-- Cloudflare-only origin restrictions have not been enabled
-- The application stack is running on the new server
-- The new origin accepts HTTPS using a Cloudflare Origin CA certificate
-- External pre-DNS HTTPS testing has passed without changing production DNS
-- A verified Phase 8 export is stored off the legacy server
-- The migrated production data is running on the new platform
-- Production DNS still directs visitors to the old server
-- Fresh pre-cutover database and WordPress-content backups are stored
-  off-server and checksum-verified
+- Production traffic reaches the new server through Cloudflare
+- Cloudflare SSL/TLS mode is Full (strict)
+- The proxied apex record targets the new Lightsail static IP
+- The proxied `www` record remains a CNAME to the apex
+- MariaDB is not published to the host
+- UFW is active with a default-deny inbound policy
+- HTTP and HTTPS remain temporarily reachable at the origin
+- Cloudflare-only origin restrictions remain Phase 12 work
+- The Phase 8 migration export remains stored off-server
+- The Phase 9 pre-cutover recovery checkpoint remains stored off-server
+- The old server remains available temporarily for rollback
+- Scheduled backups and restoration testing remain Phase 11 work

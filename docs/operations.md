@@ -167,3 +167,40 @@ Confirm that the certificate is valid and covers `chintavabna.com` and
 
 Cloudflare does not send expiration notifications for Origin CA certificates.
 The expiration date must therefore be tracked operationally.
+
+## Verify the public production path
+
+Confirm Cloudflare and the new origin health endpoint:
+
+```bash
+curl --silent --show-error --head https://chintavabna.com/ |
+grep -Ei '^(HTTP/|server:|cf-ray:|location:)'
+
+curl --fail --silent https://chintavabna.com/platform-
+```
+The response headers should identify Cloudflare, and the health endpoint should
+return `ok`.
+
+Check the application after a deployment or infrastructure change:
+```bash
+curl --fail --silent https://chintavabna.com/
+curl --fail --silent https://chintavabna.com/books/ >/dev/null
+curl --fail --silent https://chintavabna.com/robots.txt >/dev/null
+curl --fail --silent https://chintavabna.com/llms.txt >/dev/null
+```
+## Cutover rollback
+
+The old origin address must be recorded privately outside Git during the
+rollback window.
+
+To return Cloudflare traffic to the legacy origin:
+
+1. Create an emergency database dump from the new platform if it may have accepted new writes.
+2. Edit only the proxied apex A record in Cloudflare.
+3. Restore its target to the recorded legacy origin address.
+4. Keep the record proxied.
+5. Leave the www, MX, SES, SPF, DKIM and DMARC records unchanged.
+6. Verify the public application and email delivery.
+
+A rollback after the new platform accepts writes creates database divergence.
+Those writes must be reconciled before another cutover.
