@@ -170,9 +170,11 @@ origin has passed post-cutover verification.
 
 ## Cutover requirement
 
-Before the Phase 10 DNS cutover, create and copy off-server a fresh MariaDB
-dump and WordPress content backup. Full scheduled backup automation and
-restoration testing remain Phase 11 work.
+The required fresh MariaDB dump and WordPress-content backup have been created,
+copied off-server and checksum-verified. This recovery checkpoint must be
+retained throughout the Phase 10 cutover.
+
+Full scheduled backup automation and restoration testing remain Phase 11 work.
 
 ## Safety state
 
