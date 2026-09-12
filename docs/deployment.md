@@ -277,6 +277,17 @@ provides effective root-level control of the host.
 Use sudo docker during an interactive SSH session. Ansible uses privilege
 escalation through become: true.
 
+## WordPress update policy
+
+WordPress core releases are applied by changing the pinned WordPress container
+image, deploying it and validating the site. Automatic in-application core
+updates are disabled.
+
+Plugins and themes can still be managed through WordPress administration
+because `wp-content` is stored in its own persistent named volume.
+
 ## Current limitation
 
-Origin TLS and WordPress migration procedures will be added in later phases.
+Scheduled backups, retention, notifications and restoration testing remain
+Phase 11 work. The Phase 9 pre-cutover backup is a manually created and
+checksum-verified recovery checkpoint.

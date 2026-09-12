@@ -19,7 +19,8 @@ flowchart TD
     nginx["Nginx container<br/>Origin TLS and routing"]
     wordpress["WordPress Apache container"]
     mariadb["MariaDB container"]
-    wpdata[("WordPress data")]
+    wproot[("WordPress root")]
+    wpcontent[("WordPress content")]
     dbdata[("MariaDB data")]
     backup["Off-server backup storage"]
 
@@ -28,9 +29,10 @@ flowchart TD
     lightsail --> nginx
     nginx --> wordpress
     wordpress --> mariadb
-    wordpress --> wpdata
+    wordpress --> wproot
+    wordpress --> wpcontent
     mariadb --> dbdata
-    wpdata --> backup
+    wpcontent --> backup
     dbdata --> backup
 ```
 
@@ -69,11 +71,10 @@ flowchart LR
 
 Production traffic still reaches the old server through Cloudflare.
 
-The new server is not yet a production origin. It currently contains the
-secured Ubuntu host baseline and the Ansible-managed Docker platform.
-Nginx, WordPress Apache and MariaDB are running under Docker Compose. The
-database is healthy, application traffic reaches WordPress through Nginx, and
-persistent WordPress content survives container recreation.
+The new server contains the migrated production WordPress database and
+content. Nginx, WordPress Apache and MariaDB are running under Docker Compose.
+The migrated site has passed pre-DNS HTTPS testing, but the new server is not
+yet the public production origin.
 
 Nginx now terminates HTTPS using a Cloudflare Origin CA certificate covering
 `chintavabna.com` and `*.chintavabna.com`. The certificate and private key are
@@ -97,13 +98,17 @@ controlled.
 
 ## Persistence model
 
-Containers are disposable. The following state must survive container
-replacement:
+Containers are disposable. The following named volumes preserve application
+state:
 
-- MariaDB database files
-- WordPress content and uploads
-- production environment configuration
-- TLS certificate and private key
-- backup and operational state
+- `wordpress_root` for the WordPress document root, generated configuration,
+  `.htaccess` and root-level generated files
+- `wordpress_data` for plugins, themes, uploads and other `wp-content`
+- `mariadb_data` for MariaDB database files
 
-Secrets, database files, uploads and backup archives are excluded from Git.
+The separate WordPress root and content mounts make all persistent application
+storage explicit while allowing `wp-content` to be backed up independently.
+
+Production environment configuration and TLS material remain on the host
+outside Git. Database files, uploads, secrets and backup archives are also
+excluded from Git.

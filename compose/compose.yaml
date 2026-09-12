@@ -34,9 +34,12 @@ services:
         ) {
             $$_SERVER['HTTPS'] = 'on';
         }
+
+        define( 'WP_AUTO_UPDATE_CORE', false );
     secrets:
       - wordpress_db_password
     volumes:
+      - wordpress_root:/var/www/html
       - wordpress_data:/var/www/html/wp-content
     networks:
       - frontend
@@ -77,6 +80,7 @@ networks:
     internal: true
 
 volumes:
+  wordpress_root:
   wordpress_data:
   mariadb_data:
 

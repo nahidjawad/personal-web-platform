@@ -2,12 +2,13 @@
 
 ## Current phase
 
-Phase 8 complete: the legacy WordPress platform was inspected and its database
-and `wp-content` were exported, validated and copied off-server.
+Phase 9 complete: the verified WordPress database and `wp-content` export were
+imported into the new container platform, tested through the new HTTPS origin,
+and backed up off-server.
 
 ## Overall completion
 
-67% complete: 8 of 12 phases have passed verification.
+75% complete: 9 of 12 phases have passed verification.
 
 ## Completed
 
@@ -128,6 +129,25 @@ and `wp-content` were exported, validated and copied off-server.
 - Verified all checksums and compressed archives after transfer
 - Confirmed production remained available throughout the export
 
+### WordPress migration and pre-cutover backup
+
+- Transferred the verified Phase 8 migration artifacts to the new server
+- Verified source checksums again after transfer
+- Replaced the placeholder WordPress database and `wp-content`
+- Preserved the active theme, custom plugin, uploads and application data
+- Confirmed all imported database tables use the expected prefix
+- Disabled automatic WordPress core updates because core releases are managed
+  through the pinned container image
+- Kept dashboard-based plugin and theme management available
+- Verified the homepage, login, administration, REST API, books and content
+  routes through pre-DNS HTTPS testing
+- Verified WordPress can write to persistent content storage
+- Confirmed no relevant fatal, database, permission or upstream errors
+- Made the WordPress document root and `wp-content` explicit named volumes
+- Verified generated root files and custom content survive container recreation
+- Created fresh MariaDB, `wp-content` and generated-file backups
+- Copied the fresh backups off-server and verified their SHA-256 checksums
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system
@@ -141,12 +161,11 @@ and `wp-content` were exported, validated and copied off-server.
 
 ## Next phase
 
-Phase 9: transfer and import the verified WordPress database and content into
-the new container platform.
+Phase 10: perform final testing, change Cloudflare DNS to the new origin,
+verify public HTTPS and SES email delivery, and monitor the new platform.
 
-The migrated site must pass pre-DNS testing before cutover. Fresh database and
-`wp-content` backups must also be created and copied off-server before Phase 10
-changes production DNS.
+The old production server must remain available for rollback until the new
+origin has passed post-cutover verification.
 
 
 ## Cutover requirement
@@ -169,4 +188,7 @@ restoration testing remain Phase 11 work.
 - The new origin accepts HTTPS using a Cloudflare Origin CA certificate
 - External pre-DNS HTTPS testing has passed without changing production DNS
 - A verified Phase 8 export is stored off the legacy server
-- No production data has been imported into the new platform yet
+- The migrated production data is running on the new platform
+- Production DNS still directs visitors to the old server
+- Fresh pre-cutover database and WordPress-content backups are stored
+  off-server and checksum-verified

@@ -219,11 +219,83 @@ gzip --test wordpress-wp-content.tar.gz
 
 The verified Phase 8 transfer passed all checksum and archive-integrity checks.
 
-## Phase boundary
+## Phase 8 boundary
 
-This phase created and verified the initial migration export. It did not import
+Phase 8 created and verified the initial migration export. It did not import
 data, change DNS, stop services or alter the live WordPress application.
 
-The next phase transfers the verified export to the new server, imports the
-database and content, adjusts ownership, and tests the migrated site before
-cutover.
+## Import into the new platform
+
+The verified database and `wp-content` archives were transferred to a
+root-protected migration directory on the new server. Their SHA-256 checksums
+were verified again before import.
+
+A second source synchronization was unnecessary because an editorial freeze
+was maintained after the initial export.
+
+The placeholder `wp-content` files and database were replaced with the
+verified migration artifacts. Imported content ownership was changed to the
+WordPress container user.
+
+The migrated site was started using the existing Docker Compose services and
+validated through the new HTTPS origin without changing production DNS.
+
+## Post-import validation
+
+The following application behaviour was verified:
+
+- Homepage and representative content pages return HTTP 200
+- WordPress login and administration routes work
+- Pretty permalinks work
+- The WordPress REST API responds
+- The active theme and custom site plugin are available
+- WordPress can write to `wp-content`
+- MariaDB remains healthy
+- Relevant container logs contain no fatal, database, permission or upstream
+  errors
+- The SEO plugin generates and serves `robots.txt` and `llms.txt`
+- Persistent WordPress files survive container recreation
+
+Automatic WordPress core updates are disabled because core versions are
+managed through the pinned container image. Dashboard-based plugin and theme
+management remains available.
+
+## Persistent storage correction
+
+Inspection showed that the official WordPress image had created an anonymous
+volume for `/var/www/html` in addition to the declared `wp-content` volume.
+
+The document-root contents were copied into an explicitly declared
+`wordpress_root` named volume. The platform now declares separate named
+volumes for:
+
+- the WordPress document root
+- WordPress `wp-content`
+- MariaDB data
+
+The document root, `wp-content`, generated root files, active theme and custom
+plugin were verified after container recreation.
+
+## Pre-cutover recovery checkpoint
+
+A fresh post-import recovery checkpoint contains:
+
+- a consistent MariaDB logical dump
+- a complete `wp-content` archive
+- generated root files required by the migrated installation
+- SHA-256 checksums
+
+The archives were validated, copied off-server and verified again at the
+off-server destination.
+
+This manual checkpoint protects the Phase 10 cutover. Automated schedules,
+retention, notifications and restoration testing remain Phase 11 work.
+
+## Phase 9 boundary
+
+Phase 9 imported and tested the migrated application and created a verified
+off-server recovery checkpoint. Production DNS still points to the old server.
+
+Phase 10 performs final checks, changes Cloudflare DNS, verifies public HTTPS
+and email, and monitors the new origin. The old server remains available for
+rollback until post-cutover verification passes.

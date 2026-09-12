@@ -21,6 +21,7 @@ future rebuilds from repeating the same research without context.
 | Public edge | Cloudflare | Retains existing authoritative DNS, proxy, CDN and public TLS |
 | Origin TLS | Cloudflare Origin CA | Authenticates and encrypts Cloudflare-to-origin traffic |
 | Secrets | Stored outside Git | Prevents credentials, private keys and production state entering repository history |
+| WordPress persistence | Separate named root and `wp-content` volumes | Makes generated root files and user-managed content explicitly persistent |
 
 ## Why WordPress Apache is used instead of PHP-FPM
 
@@ -70,3 +71,14 @@ Docker-published ports can interact with packet filtering outside UFW's
 normal rules. Cloudflare-only origin restrictions will therefore account
 for Lightsail rules and Docker's networking behaviour rather than relying
 on UFW alone.
+
+## Why WordPress core updates are container-managed
+
+The WordPress core version is pinned by the container image. Allowing
+WordPress to replace its own core files could make the running filesystem
+differ from the declared image and produce an unexpected downgrade or change
+during container recreation.
+
+Automatic WordPress core updates are therefore disabled. Plugin and theme
+management remains available because those files are stored in persistent
+`wp-content`, while their activation and settings are stored in MariaDB.
