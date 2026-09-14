@@ -77,6 +77,35 @@
 - name: Apply pending systemd unit changes
   ansible.builtin.meta: flush_handlers
 
+- name: Inspect the Restic repository
+  ansible.builtin.shell:
+    cmd: |
+      set -o allexport
+      source {{ (backup_secrets_root ~ '/restic.env') | quote }}
+      set +o allexport
+      restic cat config
+    executable: /bin/bash
+  environment:
+    RESTIC_CACHE_DIR: "{{ backup_cache_root }}"
+  register: backup_restic_repository
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Initialize the Restic repository
+  ansible.builtin.shell:
+    cmd: |
+      set -o allexport
+      source {{ (backup_secrets_root ~ '/restic.env') | quote }}
+      set +o allexport
+      restic init
+    executable: /bin/bash
+  environment:
+    RESTIC_CACHE_DIR: "{{ backup_cache_root }}"
+  when: backup_restic_repository.rc != 0
+  changed_when: true
+  no_log: true
+
 - name: Enable backup timers
   ansible.builtin.systemd_service:
     name: "{{ item }}"
