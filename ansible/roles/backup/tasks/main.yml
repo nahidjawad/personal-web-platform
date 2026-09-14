@@ -56,6 +56,14 @@
     group: root
     mode: "0700"
 
+- name: Deploy the isolated restore-test script
+  ansible.builtin.template:
+    src: personal-web-restore-test.sh.j2
+    dest: /usr/local/sbin/personal-web-restore-test
+    owner: root
+    group: root
+    mode: "0700"
+
 - name: Deploy backup systemd units
   ansible.builtin.template:
     src: "{{ item.source }}"
