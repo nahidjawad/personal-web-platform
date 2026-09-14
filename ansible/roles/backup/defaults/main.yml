@@ -1,0 +1,16 @@
+---
+backup_platform_root: /srv/personal-web-platform
+backup_secrets_root: "{{ backup_platform_root }}/secrets/backup"
+backup_staging_root: /var/lib/personal-web-platform-backup
+backup_cache_root: /var/cache/personal-web-platform-backup
+backup_compose_project: personal-web-platform
+backup_database_service: database
+backup_wordpress_service: wordpress
+backup_wordpress_data_volume: personal-web-platform_wordpress_data
+backup_daily_schedule: "*-*-* 18:30:00 UTC"
+backup_daily_random_delay: 30m
+backup_maintenance_schedule: "Sun *-*-* 20:00:00 UTC"
+backup_maintenance_random_delay: 30m
+backup_keep_daily: 7
+backup_keep_weekly: 4
+backup_keep_monthly: 6
