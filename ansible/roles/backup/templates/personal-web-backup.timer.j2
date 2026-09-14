@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the Personal Web Platform backup daily
+
+[Timer]
+OnCalendar={{ backup_daily_schedule }}
+RandomizedDelaySec={{ backup_daily_random_delay }}
+Persistent=true
+Unit=personal-web-backup.service
+
+[Install]
+WantedBy=timers.target
