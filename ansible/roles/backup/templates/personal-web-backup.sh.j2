@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+umask 077
+
+readonly PLATFORM_ROOT={{ backup_platform_root | quote }}
+readonly SECRETS_FILE={{ (backup_secrets_root ~ '/restic.env') | quote }}
+readonly STAGING_ROOT={{ backup_staging_root | quote }}
+readonly RESTIC_CACHE_DIR={{ backup_cache_root | quote }}
+readonly WORDPRESS_DATA_VOLUME={{ backup_wordpress_data_volume | quote }}
+readonly LOCK_FILE=/run/lock/personal-web-backup.lock
+
+export RESTIC_CACHE_DIR
+
+exec 9>"${LOCK_FILE}"
+if ! flock --nonblock 9; then
+    echo "Another backup run is already active; exiting."
+    exit 0
+fi
+
+set -a
+# shellcheck disable=SC1090
+source "${SECRETS_FILE}"
+set +a
+
+readonly CURRENT_STAGING="${STAGING_ROOT}/current"
+
+cleanup() {
+    rm -rf -- "${CURRENT_STAGING}"
+}
+trap cleanup EXIT
+
+rm -rf -- "${CURRENT_STAGING}"
+install -d -o root -g root -m 0700 \
+    "${CURRENT_STAGING}/database" \
+    "${CURRENT_STAGING}/wordpress-root"
+
+cd "${PLATFORM_ROOT}"
+
+if ! docker compose --env-file .env ps --services --status running |
+    grep --fixed-strings --line-regexp --quiet {{ backup_database_service | quote }}; then
+    echo "The database service is not running." >&2
+    exit 1
+fi
+
+docker compose --env-file .env exec --no-TTY {{ backup_database_service | quote }} \
+    sh -c 'MYSQL_PWD="$(cat /run/secrets/mariadb_root_password)" exec mariadb-dump \
+        --user=root \
+        --single-transaction \
+        --quick \
+        --skip-lock-tables \
+        --hex-blob \
+        --routines \
+        --events \
+        --triggers \
+        --default-character-set=utf8mb4 \
+        "$MARIADB_DATABASE"' |
+    gzip --stdout > "${CURRENT_STAGING}/database/chintavabna.sql.gz"
+
+gzip --test "${CURRENT_STAGING}/database/chintavabna.sql.gz"
+
+table_count="$({
+    gzip --decompress --stdout \
+        "${CURRENT_STAGING}/database/chintavabna.sql.gz" |
+        grep --count '^CREATE TABLE'
+} || true)"
+
+if [[ "${table_count}" -lt 1 ]]; then
+    echo "The MariaDB dump contains no CREATE TABLE statements." >&2
+    exit 1
+fi
+
+docker compose --env-file .env exec --no-TTY {{ backup_wordpress_service | quote }} \
+    sh -c 'cd /var/www/html && tar --create --file=- \
+        --ignore-failed-read .htaccess wp-config.php robots.txt llms.txt 2>/dev/null' |
+    tar --extract --file=- --directory="${CURRENT_STAGING}/wordpress-root"
+
+wordpress_data_path="$({
+    docker volume inspect "${WORDPRESS_DATA_VOLUME}" |
+        jq --raw-output '.[0].Mountpoint'
+})"
+
+if [[ ! -d "${wordpress_data_path}" ]]; then
+    echo "The WordPress content volume mountpoint is unavailable." >&2
+    exit 1
+fi
+
+restic backup \
+    "${CURRENT_STAGING}/database" \
+    "${CURRENT_STAGING}/wordpress-root" \
+    "${wordpress_data_path}" \
+    --host "$(hostname --short)" \
+    --tag automated \
+    --tag chintavabna
+
+restic forget \
+    --host "$(hostname --short)" \
+    --tag chintavabna \
+    --keep-daily {{ backup_keep_daily }} \
+    --keep-weekly {{ backup_keep_weekly }} \
+    --keep-monthly {{ backup_keep_monthly }}
+
+echo "Backup completed successfully with ${table_count} database tables."
