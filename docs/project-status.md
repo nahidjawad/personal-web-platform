@@ -229,6 +229,6 @@ cost-control measure.
 - The Phase 8 migration export remains stored off-server
 - The Phase 9 pre-cutover recovery checkpoint remains stored off-server
 - The old server remains available temporarily for rollback
-- Scheduled backups and restoration testing remain Phase 11 work
+- Scheduled R2 backups and isolated restoration passed verification
 - Two unrelated legacy workloads still require preservation or an explicit
   discard decision before the old server can be deleted

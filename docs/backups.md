@@ -313,7 +313,7 @@ machines writing snapshots for the same site. Keep the old host until the
 new site passes a monitoring window and the separate legacy workloads have
 been handled as described in [Project status](project-status.md).
 
-Deploy monitoring on the replacement host only now:
+Return to the WSL Ansible controller, verify that its inventory points to the replacement host, and run from the repository’s ansible directory:
 
 ```bash
 uv run ansible-playbook playbooks/backups.yml
