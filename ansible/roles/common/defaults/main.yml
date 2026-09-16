@@ -1,5 +1,6 @@
 ---
 common_server_timezone: Etc/UTC
+common_server_hostname: "{{ inventory_hostname }}"
 
 common_packages:
   - acl

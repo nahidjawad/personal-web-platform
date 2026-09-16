@@ -2,13 +2,11 @@
 
 ## Current phase
 
-Phase 10 complete: Cloudflare production traffic was switched to the new
-container platform, public application and email delivery tests passed, and
-initial monitoring found no relevant errors.
+Phase 11 complete: encrypted off-server backups, retention and integrity checks, Healthchecks notifications, and isolated restoration have been tested.
 
 ## Overall completion
 
-83% complete: 10 of 12 phases have passed verification.
+92% complete: 11 of 12 phases have passed verification.
 
 ## Completed
 
@@ -168,9 +166,22 @@ initial monitoring found no relevant errors.
 - Found no relevant application, database, permission, upstream or HTTP 5xx
   errors
 
+### Encrypted backups and recovery
+
+- Stored encrypted snapshots in a Cloudflare R2 bucket using Restic
+- Scheduled a daily MariaDB export and WordPress content backup with a persistent systemd timer
+- Retained 7 daily, 4 weekly and 6 monthly snapshots
+- Scheduled weekly pruning, a 5% repository data check and local cache cleanup
+- Protected Restic credentials and Healthchecks URLs in root-owned files
+- Configured separate Healthchecks alerts for daily and weekly jobs
+- Verified a scheduled backup and a second backup's incremental upload
+- Restored a snapshot into isolated storage and imported 43 tables into a disposable MariaDB container without changing production
+- Verified the newest snapshot after monitoring integration and stable Restic host labeling using the isolated restore test
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system
+- The Ansible inventory name sets the host's persistent OS hostname
 - Ansible manages host configuration
 - Docker Compose manages application containers
 - Nginx, WordPress Apache and MariaDB run as separate containers
@@ -179,11 +190,12 @@ initial monitoring found no relevant errors.
 - WordPress core versions are managed through the pinned container image
 - Production data and secrets remain outside Git
 - The server and infrastructure logs use UTC
+- Restic encrypts backups before uploading to R2; systemd schedules the jobs
+- Healthchecks monitors backup and maintenance completion; UptimeRobot monitors public site availability
 
 ## Next phase
 
-Phase 11: implement automated MariaDB and `wp-content` backups, off-server
-storage, retention, failure notification and a verified restoration test.
+Phase 12: restrict HTTP and HTTPS origin traffic to Cloudflare and complete the final security and operational review.
 
 ## Old-server retirement decision
 

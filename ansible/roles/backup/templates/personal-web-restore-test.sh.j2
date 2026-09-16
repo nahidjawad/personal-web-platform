@@ -45,7 +45,6 @@ install -d -o root -g root -m 0700 "${RESTORE_TARGET}"
 
 restic restore "${SNAPSHOT_ID}" \
     --target "${RESTORE_TARGET}" \
-    --host "$(hostname --short)" \
     --tag chintavabna
 
 readonly RESTORED_STAGING="${RESTORE_TARGET}{{ backup_staging_root }}/current"
@@ -86,15 +85,16 @@ docker run \
 
 for attempt in $(seq 1 60); do
     if docker exec "${TEST_CONTAINER}" \
-        sh -c 'mariadb-admin ping \
+        sh -c 'mariadb \
             --user=root \
             --password="$(cat /run/secrets/restore-root-password)" \
-            --silent' >/dev/null 2>&1; then
+            --database=restore_test \
+            --execute="SELECT 1"' >/dev/null 2>&1; then
         break
     fi
 
     if [[ "${attempt}" -eq 60 ]]; then
-        echo "The isolated MariaDB container did not become ready." >&2
+        echo "The isolated MariaDB database did not become ready for authenticated queries." >&2
         docker logs "${TEST_CONTAINER}" >&2
         exit 1
     fi

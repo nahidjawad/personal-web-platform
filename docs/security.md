@@ -16,6 +16,9 @@
 - TLS files are mounted read-only into the Nginx container
 - Cloudflare uses Full (strict) validation for origin HTTPS
 - Public WordPress email uses Amazon SES with verified SPF, DKIM and DMARC
+- Restic encrypts WordPress backups before uploading to Cloudflare R2
+- The R2 access keys, repository password and Healthchecks URLs are held in root-owned files outside Git
+- Daily backup and weekly maintenance report to separate Healthchecks checks
 
 ## Application secrets
 
@@ -37,10 +40,7 @@ uv run ansible-playbook playbooks/application-secrets.yml
 The playbook preserves existing secret values. Changing a secret file alone
 does not rotate the corresponding MariaDB account password.
 
-## Planned controls
-
-Automated off-server backups, retention, notifications and restoration testing
-remain Phase 11 work.
-
 Cloudflare-only HTTP and HTTPS origin restrictions and the final security
 review remain Phase 12 work.
+
+For backup access and recovery procedures, see [Backups and recovery](backups.md).

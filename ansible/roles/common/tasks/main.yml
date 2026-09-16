@@ -19,6 +19,29 @@
   community.general.timezone:
     name: "{{ common_server_timezone }}"
 
+- name: Preserve the Ansible-managed hostname across cloud-init runs
+  ansible.builtin.copy:
+    dest: /etc/cloud/cloud.cfg.d/99-personal-web-platform-hostname.cfg
+    content: "preserve_hostname: true\nmanage_etc_hosts: false\n"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: host_name
+
+- name: Configure the server hostname
+  ansible.builtin.hostname:
+    name: "{{ common_server_hostname }}"
+    use: systemd
+  tags: host_name
+
+- name: Resolve the server hostname locally
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1 {{ common_server_hostname }}"
+    state: present
+  tags: host_name
+
 - name: Check whether the server requires a reboot
   ansible.builtin.stat:
     path: /var/run/reboot-required

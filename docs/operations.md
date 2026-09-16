@@ -1,5 +1,7 @@
 # Operations Guide
 
+For the daily encrypted backup, weekly repository maintenance, Healthchecks alerts and isolated restoration procedure, see [Backups and recovery](backups.md).
+
 ## Scope
 
 This guide contains tested operational procedures for the personal web

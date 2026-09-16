@@ -13,6 +13,8 @@
   loop:
     - "{{ backup_secrets_root }}/restic.env"
     - "{{ backup_secrets_root }}/restic-password"
+    - "{{ backup_healthchecks_backup_url_file }}"
+    - "{{ backup_healthchecks_maintenance_url_file }}"
   register: backup_required_secret_files
   no_log: true
 
@@ -85,22 +87,7 @@
 - name: Apply pending systemd unit changes
   ansible.builtin.meta: flush_handlers
 
-- name: Inspect the Restic repository
-  ansible.builtin.shell:
-    cmd: |
-      set -o allexport
-      source {{ (backup_secrets_root ~ '/restic.env') | quote }}
-      set +o allexport
-      restic cat config
-    executable: /bin/bash
-  environment:
-    RESTIC_CACHE_DIR: "{{ backup_cache_root }}"
-  register: backup_restic_repository
-  changed_when: false
-  failed_when: false
-  no_log: true
-
-- name: Initialize the Restic repository
+- name: Initialize the Restic repository when explicitly requested
   ansible.builtin.shell:
     cmd: |
       set -o allexport
@@ -110,8 +97,21 @@
     executable: /bin/bash
   environment:
     RESTIC_CACHE_DIR: "{{ backup_cache_root }}"
-  when: backup_restic_repository.rc != 0
+  when: backup_repository_initialize | bool
   changed_when: true
+  no_log: true
+
+- name: Verify access to the Restic repository
+  ansible.builtin.shell:
+    cmd: |
+      set -o allexport
+      source {{ (backup_secrets_root ~ '/restic.env') | quote }}
+      set +o allexport
+      restic cat config
+    executable: /bin/bash
+  environment:
+    RESTIC_CACHE_DIR: "{{ backup_cache_root }}"
+  changed_when: false
   no_log: true
 
 - name: Enable backup timers
