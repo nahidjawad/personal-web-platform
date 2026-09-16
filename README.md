@@ -49,6 +49,7 @@ See [docs/project-status.md](docs/project-status.md).
 - [Current project status](docs/project-status.md)
 - [Security controls](docs/security.md)
 - [Wordpress migration](docs/migration.md)
+- [Backups and recovery](docs/backups.md)
 
 Migration, security and disaster-recovery documentation will be expanded as
 the corresponding procedures are implemented and verified.

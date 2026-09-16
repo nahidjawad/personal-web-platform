@@ -1,0 +1,8 @@
+---
+- name: Configure encrypted off-server backups
+  hosts: web_servers
+  gather_facts: false
+  become: true
+
+  roles:
+    - role: backup

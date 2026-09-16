@@ -99,6 +99,14 @@ Apply the operating-system baseline:
 ```bash
 uv run ansible-playbook playbooks/baseline.yml
 ```
+The baseline sets the OS hostname from the inventory name and maintains its local `/etc/hosts` mapping. On an existing server, to apply only these hostname tasks without upgrading packages, run:
+
+```bash
+uv run ansible-playbook playbooks/baseline.yml --tags host_name
+```
+Verify with `hostnamectl --static` and `getent hosts personal-web-prod-01`.
+The backup snapshot host label is configured separately by the backup role.
+
 If the baseline reports that a reboot is required, run:
 ```bash
 uv run ansible-playbook playbooks/reboot-if-required.yml
@@ -286,8 +294,15 @@ updates are disabled.
 Plugins and themes can still be managed through WordPress administration
 because `wp-content` is stored in its own persistent named volume.
 
-## Current limitation
+## Deploy backups
 
-Scheduled backups, retention, notifications and restoration testing remain
-Phase 11 work. The Phase 9 pre-cutover backup is a manually created and
-checksum-verified recovery checkpoint.
+Create an R2 bucket and scoped access key. Keep the original Restic password and R2 credentials in a protected location outside the server and repository.
+From the `ansible` directory, provision secrets, monitoring URLs and the scheduled jobs in that order:
+
+```bash
+uv run ansible-playbook playbooks/backup-secrets.yml
+uv run ansible-playbook playbooks/backup-monitoring-secrets.yml
+uv run ansible-playbook playbooks/backups.yml
+```
+
+The first two playbooks preserve existing secret files by default. See [Backups and recovery](backups.md) for schedules, monitoring and restore tests.

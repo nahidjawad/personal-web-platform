@@ -1,0 +1,12 @@
+[Unit]
+Description=Personal Web Platform backup retention and integrity check
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/personal-web-backup-maintenance
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=true

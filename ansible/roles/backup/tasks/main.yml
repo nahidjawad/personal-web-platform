@@ -1,0 +1,137 @@
+---
+- name: Install backup packages
+  ansible.builtin.apt:
+    name:
+      - restic
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Inspect required backup secret files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ backup_secrets_root }}/restic.env"
+    - "{{ backup_secrets_root }}/restic-password"
+    - "{{ backup_healthchecks_backup_url_file }}"
+    - "{{ backup_healthchecks_maintenance_url_file }}"
+  register: backup_required_secret_files
+  no_log: true
+
+- name: Verify required backup secret files
+  ansible.builtin.assert:
+    that:
+      - item.stat.exists
+      - item.stat.isreg
+      - item.stat.pw_name == "root"
+      - item.stat.gr_name == "root"
+      - item.stat.mode == "0600"
+    fail_msg: A required backup secret file is missing or incorrectly protected.
+    quiet: true
+  loop: "{{ backup_required_secret_files.results }}"
+  no_log: true
+
+- name: Create protected backup working directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  loop:
+    - "{{ backup_staging_root }}"
+    - "{{ backup_cache_root }}"
+
+- name: Deploy the backup script
+  ansible.builtin.template:
+    src: personal-web-backup.sh.j2
+    dest: /usr/local/sbin/personal-web-backup
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Deploy the backup maintenance script
+  ansible.builtin.template:
+    src: personal-web-backup-maintenance.sh.j2
+    dest: /usr/local/sbin/personal-web-backup-maintenance
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Deploy the isolated restore-test script
+  ansible.builtin.template:
+    src: personal-web-restore-test.sh.j2
+    dest: /usr/local/sbin/personal-web-restore-test
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Deploy backup systemd units
+  ansible.builtin.template:
+    src: "{{ item.source }}"
+    dest: "/etc/systemd/system/{{ item.destination }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - source: personal-web-backup.service.j2
+      destination: personal-web-backup.service
+    - source: personal-web-backup.timer.j2
+      destination: personal-web-backup.timer
+    - source: personal-web-backup-maintenance.service.j2
+      destination: personal-web-backup-maintenance.service
+    - source: personal-web-backup-maintenance.timer.j2
+      destination: personal-web-backup-maintenance.timer
+  notify: Reload systemd
+
+- name: Apply pending systemd unit changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Initialize the Restic repository when explicitly requested
+  ansible.builtin.shell:
+    cmd: |
+      set -o allexport
+      source {{ (backup_secrets_root ~ '/restic.env') | quote }}
+      set +o allexport
+      restic init
+    executable: /bin/bash
+  environment:
+    RESTIC_CACHE_DIR: "{{ backup_cache_root }}"
+  when: backup_repository_initialize | bool
+  changed_when: true
+  no_log: true
+
+- name: Verify access to the Restic repository
+  ansible.builtin.shell:
+    cmd: |
+      set -o allexport
+      source {{ (backup_secrets_root ~ '/restic.env') | quote }}
+      set +o allexport
+      restic cat config
+    executable: /bin/bash
+  environment:
+    RESTIC_CACHE_DIR: "{{ backup_cache_root }}"
+  changed_when: false
+  no_log: true
+
+- name: Enable backup timers
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - personal-web-backup.timer
+    - personal-web-backup-maintenance.timer
+
+- name: Read the installed Restic version
+  ansible.builtin.command:
+    cmd: restic version
+  register: backup_restic_version
+  changed_when: false
+
+- name: Display the backup automation summary
+  ansible.builtin.debug:
+    msg:
+      - "{{ backup_restic_version.stdout }}"
+      - "Daily backup schedule: {{ backup_daily_schedule }}"
+      - "Weekly maintenance schedule: {{ backup_maintenance_schedule }}"

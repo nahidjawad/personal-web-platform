@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Personal Web Platform backup maintenance weekly
+
+[Timer]
+OnCalendar={{ backup_maintenance_schedule }}
+RandomizedDelaySec={{ backup_maintenance_random_delay }}
+Persistent=true
+Unit=personal-web-backup-maintenance.service
+
+[Install]
+WantedBy=timers.target

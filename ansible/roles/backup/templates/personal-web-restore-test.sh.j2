@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+umask 077
+
+readonly SECRETS_FILE={{ (backup_secrets_root ~ '/restic.env') | quote }}
+readonly RESTIC_CACHE_DIR={{ backup_cache_root | quote }}
+readonly RESTORE_ROOT={{ (backup_staging_root ~ '/restore-test') | quote }}
+readonly WORDPRESS_DATA_VOLUME={{ backup_wordpress_data_volume | quote }}
+readonly MARIADB_IMAGE=mariadb:11.4.13
+readonly LOCK_FILE=/run/lock/personal-web-backup.lock
+readonly SNAPSHOT_ID="${1:-latest}"
+readonly TEST_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+readonly TEST_CONTAINER="personal-web-restore-test-${TEST_ID}"
+readonly TEST_VOLUME="personal-web-restore-test-${TEST_ID}"
+readonly RESTORE_TARGET="${RESTORE_ROOT}/${TEST_ID}"
+readonly TEST_PASSWORD_FILE="${RESTORE_TARGET}/restore-root-password"
+
+export RESTIC_CACHE_DIR
+
+exec 9>"${LOCK_FILE}"
+if ! flock --nonblock 9; then
+    echo "A backup or maintenance run is already active; exiting." >&2
+    exit 1
+fi
+
+if [[ ! "${SNAPSHOT_ID}" =~ ^(latest|[[:xdigit:]]{8,64})$ ]]; then
+    echo "Snapshot must be 'latest' or a Restic snapshot ID." >&2
+    exit 1
+fi
+
+set -a
+# shellcheck disable=SC1090
+source "${SECRETS_FILE}"
+set +a
+
+cleanup() {
+    docker rm --force "${TEST_CONTAINER}" >/dev/null 2>&1 || true
+    docker volume rm "${TEST_VOLUME}" >/dev/null 2>&1 || true
+    rm -rf -- "${RESTORE_TARGET}"
+}
+trap cleanup EXIT
+
+install -d -o root -g root -m 0700 "${RESTORE_TARGET}"
+
+restic restore "${SNAPSHOT_ID}" \
+    --target "${RESTORE_TARGET}" \
+    --tag chintavabna
+
+readonly RESTORED_STAGING="${RESTORE_TARGET}{{ backup_staging_root }}/current"
+readonly RESTORED_DATABASE="${RESTORED_STAGING}/database/chintavabna.sql.gz"
+readonly RESTORED_WORDPRESS_ROOT="${RESTORED_STAGING}/wordpress-root"
+readonly RESTORED_WORDPRESS_DATA="${RESTORE_TARGET}/var/lib/docker/volumes/${WORDPRESS_DATA_VOLUME}/_data"
+
+gzip --test "${RESTORED_DATABASE}"
+
+dump_table_count="$({
+    gzip --decompress --stdout "${RESTORED_DATABASE}" |
+        grep --count '^CREATE TABLE'
+} || true)"
+
+if [[ "${dump_table_count}" -lt 1 ]]; then
+    echo "The restored database dump contains no CREATE TABLE statements." >&2
+    exit 1
+fi
+
+test -s "${RESTORED_WORDPRESS_ROOT}/wp-config.php"
+test -d "${RESTORED_WORDPRESS_DATA}/themes/magbook"
+test -d "${RESTORED_WORDPRESS_DATA}/plugins/chintavabna-book-recommendations"
+test -d "${RESTORED_WORDPRESS_DATA}/uploads"
+
+openssl rand -base64 36 > "${TEST_PASSWORD_FILE}"
+
+docker volume create "${TEST_VOLUME}" >/dev/null
+
+docker run \
+    --detach \
+    --name "${TEST_CONTAINER}" \
+    --network none \
+    --volume "${TEST_VOLUME}:/var/lib/mysql" \
+    --volume "${TEST_PASSWORD_FILE}:/run/secrets/restore-root-password:ro" \
+    --env MARIADB_DATABASE=restore_test \
+    --env MARIADB_ROOT_PASSWORD_FILE=/run/secrets/restore-root-password \
+    "${MARIADB_IMAGE}" >/dev/null
+
+for attempt in $(seq 1 60); do
+    if docker exec "${TEST_CONTAINER}" \
+        sh -c 'mariadb \
+            --user=root \
+            --password="$(cat /run/secrets/restore-root-password)" \
+            --database=restore_test \
+            --execute="SELECT 1"' >/dev/null 2>&1; then
+        break
+    fi
+
+    if [[ "${attempt}" -eq 60 ]]; then
+        echo "The isolated MariaDB database did not become ready for authenticated queries." >&2
+        docker logs "${TEST_CONTAINER}" >&2
+        exit 1
+    fi
+
+    sleep 2
+done
+
+gzip --decompress --stdout "${RESTORED_DATABASE}" |
+    docker exec --interactive "${TEST_CONTAINER}" \
+        sh -c 'mariadb \
+            --user=root \
+            --password="$(cat /run/secrets/restore-root-password)" \
+            restore_test'
+
+restored_table_count="$({
+    docker exec "${TEST_CONTAINER}" \
+        sh -c 'mariadb \
+            --batch \
+            --skip-column-names \
+            --user=root \
+            --password="$(cat /run/secrets/restore-root-password)" \
+            --execute="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '\''restore_test'\'';"'
+})"
+
+if [[ "${restored_table_count}" -ne "${dump_table_count}" ]]; then
+    echo "Table-count mismatch: dump=${dump_table_count}, restored=${restored_table_count}." >&2
+    exit 1
+fi
+
+echo "Isolated restore test passed."
+echo "Snapshot: ${SNAPSHOT_ID}"
+echo "Database tables: ${restored_table_count}"
+echo "Verified: wp-config.php, Magbook theme, custom plugin and uploads directory"
