@@ -94,9 +94,11 @@ The production host currently permits:
 
 MariaDB will not be exposed on a host or public port.
 
-After production verification, HTTP and HTTPS origin access will be
-restricted to Cloudflare address ranges. SSH will remain independently
-controlled.
+Public HTTP and HTTPS origin access is restricted at the Lightsail IPv4
+firewall to Cloudflare address ranges; public IPv6 is disabled on the
+instance. SSH remains independently controlled. UFW's old broad web
+permissions are removed through Ansible, but Docker-published ports can
+bypass UFW, so the Lightsail rules are the public enforcement point.
 
 ## Persistence model
 

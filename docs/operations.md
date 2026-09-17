@@ -183,6 +183,25 @@ curl --fail --silent https://chintavabna.com/platform-health
 The response headers should identify Cloudflare, and the health endpoint should
 return `ok`.
 
+## Verify origin restrictions
+
+After changing Lightsail rules, check AWS shows only Cloudflare CIDRs for
+TCP 80 and 443, and an independent SSH rule on TCP 22. Reconnect with a
+fresh IPv4 SSH session. From an external machine outside Cloudflare, use
+`curl --resolve` with the privately recorded origin IPv4 for both HTTP and
+HTTPS: neither should return an origin HTTP response. A `curl` timeout with
+a nonzero TCP connect time does not establish that the SYN was blocked; the
+AWS rule state and both allowed/blocked application paths are the evidence.
+Confirm `https://chintavabna.com/platform-health` returns `ok`, local
+`http://127.0.0.1/platform-health` returns `ok`, administration works, a
+WordPress test email is delivered, and UptimeRobot and both Healthchecks
+checks remain green.
+
+The reviewed CloudShell script and rollback procedure are in
+[Security controls](security.md). Do not use the script's `rollback` mode
+as a routine update; it deliberately opens the web ports to all IPv4
+sources. The SSH rule is independent of either web rule.
+
 Check the application after a deployment or infrastructure change:
 ```bash
 curl --fail --silent https://chintavabna.com/
