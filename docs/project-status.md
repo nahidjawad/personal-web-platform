@@ -2,11 +2,16 @@
 
 ## Current phase
 
-Phase 11 complete: encrypted off-server backups, retention and integrity checks, Healthchecks notifications, and isolated restoration have been tested.
+Phase 12 verified: the public web origin is restricted to Cloudflare IPv4
+ranges at the Lightsail firewall, public instance IPv6 is disabled, and the
+temporary broad UFW web permissions have been removed. Public and direct
+paths, SSH, application health and the final operational checks passed.
 
 ## Overall completion
 
-92% complete: 11 of 12 phases have passed verification.
+All 12 technical migration phases have passed verification. Overall project
+closeout remains pending preservation of the two other old-server workloads
+and retirement of that server; the project is not marked 100% complete.
 
 ## Completed
 
@@ -178,6 +183,18 @@ Phase 11 complete: encrypted off-server backups, retention and integrity checks,
 - Restored a snapshot into isolated storage and imported 43 tables into a disposable MariaDB container without changing production
 - Verified the newest snapshot after monitoring integration and stable Restic host labeling using the isolated restore test
 
+### Final origin restriction and operational review
+
+- Restricted Lightsail IPv4 TCP 80 and 443 to Cloudflare's published ranges
+- Disabled public IPv6 networking on the Lightsail instance
+- Kept TCP 22 independent and verified a fresh SSH login
+- Confirmed direct IPv4 HTTP and HTTPS no longer serve origin responses
+- Confirmed Cloudflare health, local health, administration and email
+- Verified container state, Nginx syntax, TLS metadata, secret permissions,
+  timers, Healthchecks, UptimeRobot, logging and disk capacity
+- Removed temporary broad UFW web permissions through Ansible
+- Documented Docker's UFW bypass and the Lightsail public enforcement point
+
 ## Current architecture decisions
 
 - Ubuntu 24.04 LTS is the managed server operating system
@@ -193,9 +210,13 @@ Phase 11 complete: encrypted off-server backups, retention and integrity checks,
 - Restic encrypts backups before uploading to R2; systemd schedules the jobs
 - Healthchecks monitors backup and maintenance completion; UptimeRobot monitors public site availability
 
-## Next phase
+## Remaining old-server work
 
-Phase 12: restrict HTTP and HTTPS origin traffic to Cloudflare and complete the final security and operational review.
+Invoice Australia and Cinematic Travelling will be preserved and handled
+separately. Inventory and copy their application files and databases,
+verify the copies and an independent recovery location, then decide whether
+to deploy either workload. Do not delete the old server until this work is
+verified. The second-site runbook is in [Add another WordPress site](adding-wordpress-site.md).
 
 ## Old-server retirement decision
 
@@ -224,8 +245,11 @@ cost-control measure.
 - The proxied `www` record remains a CNAME to the apex
 - MariaDB is not published to the host
 - UFW is active with a default-deny inbound policy
-- HTTP and HTTPS remain temporarily reachable at the origin
-- Cloudflare-only origin restrictions remain Phase 12 work
+- Lightsail accepts public IPv4 HTTP and HTTPS only from Cloudflare ranges
+- Public IPv6 networking is disabled on the instance
+- SSH remains independently available on IPv4
+- Docker publishes Nginx ports; UFW alone does not filter that path
+- Old-server retirement remains pending verified preservation of the two other workloads
 - The Phase 8 migration export remains stored off-server
 - The Phase 9 pre-cutover recovery checkpoint remains stored off-server
 - The old server remains available temporarily for rollback

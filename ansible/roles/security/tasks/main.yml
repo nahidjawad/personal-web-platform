@@ -6,12 +6,12 @@
     proto: tcp
     comment: Rate-limited SSH administration
 
-- name: Permit initial web traffic
+- name: Remove temporary broad web permissions
   community.general.ufw:
     rule: allow
     port: "{{ item }}"
     proto: tcp
-    comment: Initial web traffic
+    delete: true
   loop: "{{ security_web_ports }}"
   loop_control:
     label: "TCP {{ item }}"
