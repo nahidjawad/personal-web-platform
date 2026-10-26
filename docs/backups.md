@@ -265,11 +265,11 @@ docker volume create personal-web-platform_wordpress_data
 docker run --rm --network none --entrypoint sh \
   --mount "type=bind,source=$RECOVERY_WP_ROOT,target=/restore,readonly" \
   --mount type=volume,source=personal-web-platform_wordpress_root,target=/target \
-  wordpress:7.1.0-php8.3-apache -c 'cp -a /restore/. /target/'
+  wordpress:7.1.3-php8.3-apache -c 'cp -a /restore/. /target/'
 docker run --rm --network none --entrypoint sh \
   --mount "type=bind,source=$RECOVERY_WP_DATA,target=/restore,readonly" \
   --mount type=volume,source=personal-web-platform_wordpress_data,target=/target \
-  wordpress:7.1.0-php8.3-apache -c 'cp -a /restore/. /target/'
+  wordpress:7.1.3-php8.3-apache -c 'cp -a /restore/. /target/'
 ```
 
 These copy commands use a disposable container and preserve file ownership.
